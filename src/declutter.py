@@ -64,6 +64,7 @@ df_2['tokens'] = df_2['brand'] + df_2['cpu_brand'] + df_2['cpu_model'] + df_2['c
                  df_2['ram_capacity'] + df_2['ram_type'] + df_2['ram_frequency'] + df_2['hdd_capacity'] + \
                  df_2['ssd_capacity'] + df_2['weight'] + df_2['dimensions']
 
+df_2['tokens']=df_2['tokens'].apply(remove_bad_tokens)
 # df_2['tokens'] = df_2.apply(gather_tokens, axis=1)
 
 x = 00
