@@ -1,6 +1,4 @@
 import pandas as pd
-#from operator import itemgetter
-#import math
 import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import sent_tokenize
@@ -19,7 +17,7 @@ def get_keywords(record, col):
     result = str(brand)
     result = result.lower()
 
-    basic_punct = '?!,:;/\-~*_=(){}[]®©™'  # remove these symbols
+    basic_punct = '-_,:;/()®™'  # extra symbols: ? ! \ * ~ {} [] © = *
     punct_to_space = str.maketrans(basic_punct, ' ' * len(basic_punct))  # map punctuation to space
     result = result.translate(punct_to_space)
 
@@ -39,6 +37,7 @@ def remove_bad_tokens(tokens):
     return list(result_tokens)
 
 
+# Turns each record into a list of tokens
 def pre_process_record(record):
     idx = df_2.index.get_loc(record.name)
 
@@ -46,15 +45,18 @@ def pre_process_record(record):
         tokens = remove_bad_tokens(get_keywords(record, column))
         df_2.iloc[idx][column] = tokens
 
-
-    all_tokens = tokens  # df_2.loc[df['brand']]
+    # all_tokens = tokens  # df_2.loc[df['brand']]
     # all_tokens = brand_tokens + cpu_brand_tokens
-
-    return remove_bad_tokens(all_tokens)
-
-
-def gather_tokens(row):
+    # #return remove_bad_tokens(all_tokens)
     return
+
+
+# Generate 'tokens' column. Doesn't work yet
+def gather_tokens(cols):
+    x = []
+    for item in cols:
+        x.append(item)
+    return x
 
 
 # axis=1 means that we will apply get_keywords to each row and not each column
@@ -64,12 +66,12 @@ df_2['tokens'] = df_2['brand'] + df_2['cpu_brand'] + df_2['cpu_model'] + df_2['c
                  df_2['ram_capacity'] + df_2['ram_type'] + df_2['ram_frequency'] + df_2['hdd_capacity'] + \
                  df_2['ssd_capacity'] + df_2['weight'] + df_2['dimensions']
 
-df_2['tokens']=df_2['tokens'].apply(remove_bad_tokens)
+df_2['tokens'] = df_2['tokens'].apply(remove_bad_tokens)
 # df_2['tokens'] = df_2.apply(gather_tokens, axis=1)
 
+print(df_2['title'].head(5))
+
 x = 00
-
-
 
 """
 regex = r'^(\d{1,2})\s?GB'
