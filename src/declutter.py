@@ -8,14 +8,11 @@ from nltk.tokenize import sent_tokenize
 
 # I define the stop_words here so I don't do it every time in the function below
 # stop_words = stopwords.words('english')
-df = pd.read_csv("/Users/abdeas0a/Desktop/X2.csv", low_memory=False)
+#df = pd.read_csv("/Users/abdeas0a/Desktop/X2.csv", low_memory=False)
+df = pd.read_csv("D:\Coding Projects\sigmod\X2.csv", low_memory=False)
 
 
-# This function will be applied to each row in our Pandas Dataframe
-# See the docs for df.apply at:
-# https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.apply.html
 def get_keywords(record, col):
-    # some_text = col['brand']
     brand = record[col]
     if brand is None:
         brand = ""
@@ -24,7 +21,7 @@ def get_keywords(record, col):
     result = result.lower()
 
     # Remove ; , ,
-    basic_punct = '?!,:;/\-~*_=(){}[]™' # add more œ∑´´†¥¨ˆˆπåß∂ƒ©˙∆˚¬Ω≈ç√∫˜˜≤≤‘“πøˆ¨¥æ¡™£¢∞§¶•ªº–ºª•πøˆ¨¥†®´´œåß∂ƒ©˙∆˚¬≥≤µ˜˜√ç≈…¬¥æ≥¡™£¢∞§¶•ª
+    basic_punct = '?!,:;/\-~*_=(){}[]®©™' # add more
     punct_to_space = str.maketrans(basic_punct, ' ' * len(basic_punct))  # map punctuation to space
     result = result.translate(punct_to_space)
 
@@ -45,7 +42,11 @@ def remove_bad_tokens(tokens):
 
 def pre_process_record(record):
     idx = df_2.index.get_loc(record.name)
-    # Update Brand
+
+    for column in df_2.columns:
+        tokens = remove_bad_tokens(get_keywords(record, column))
+        df_2.iloc[idx][column] = tokens
+    """
     brand_tokens = remove_bad_tokens(get_keywords(record, 'brand'))
     df_2.iloc[idx]['brand'] = brand_tokens
 
@@ -53,16 +54,38 @@ def pre_process_record(record):
     cpu_brand_tokens = remove_bad_tokens(get_keywords(record, 'cpu_brand'))
     df_2.iloc[idx]['cpu_brand'] = cpu_brand_tokens
 
-    all_tokens = brand_tokens + cpu_brand_tokens
+    # cpu_model
+    cpu_model_tokens = remove_bad_tokens(get_keywords(record, 'cpu_model'))
+    df_2.iloc[idx]['cpu_model'] = cpu_model_tokens
+
+    # cpu_type
+    cpu_type_tokens = remove_bad_tokens(get_keywords(record, 'cpu_type'))
+    df_2.iloc[idx]['cpu_type'] = cpu_type_tokens
+
+    # cpu_frequency
+    cpu_frequency_tokens = remove_bad_tokens(get_keywords(record, 'cpu_frequency'))
+    df_2.iloc[idx]['cpu_frequency'] = cpu_frequency_tokens
+
+    # ram_capacity
+    ram_capacity_tokens = remove_bad_tokens(get_keywords(record, 'ram_capacity'))
+    df_2.iloc[idx]['ram_capacity'] = ram_capacity_tokens
+"""
+    all_tokens = tokens #df_2.loc[df['brand']]
+    #all_tokens = brand_tokens + cpu_brand_tokens
 
     return remove_bad_tokens(all_tokens)
+def gather_tokens(row):
 
+    return
 
 # applying the get_keywords function to our dataframe and saving the results
 # as a new column in our dataframe called 'keywords'
 # axis=1 means that we will apply get_keywords to each row and not each column
 df_2 = df.copy(deep=True)
-df_2['tokens'] = df_2.apply(pre_process_record, axis=1)
+df_2.apply(pre_process_record, axis=1)
+df_2['tokens'] = df_2['brand']+ df_2['cpu_brand'] + df_2['ram_capacity'] +
+
+#df_2['tokens'] = df_2.apply(gather_tokens, axis=1)
 x = 00
 
 """
