@@ -35,24 +35,27 @@ def get_keywords(record, col):
     # return tokens[0]
 
 
-def pre_process_record(record):
-    # Update Brand
-    brand_tokens = get_keywords(record, 'brand')
-    df_2['brand'] = brand_tokens
-
-    # Cpu brand
-    cpu_brand_tokens = get_keywords(record, 'cpu_brand')
-    df_2['cpu_brand'] = brand_tokens
-
-    all_tokens = brand_tokens + cpu_brand_tokens
-
+def remove_bad_tokens(tokens):
     result_tokens = set()
-    for el in all_tokens:
+    for el in tokens:
         if el in ['.', '']:
             continue
         result_tokens.add(el)
-
     return list(result_tokens)
+
+def pre_process_record(record):
+    idx = df_2.index.get_loc(record.name)
+    # Update Brand
+    brand_tokens = remove_bad_tokens(get_keywords(record, 'brand'))
+    df_2.iloc[idx]['brand'] = brand_tokens
+
+    # Cpu brand
+    cpu_brand_tokens = remove_bad_tokens(get_keywords(record, 'cpu_brand'))
+    df_2.iloc[idx]['cpu_brand'] = cpu_brand_tokens
+
+    all_tokens = brand_tokens + cpu_brand_tokens
+
+    return remove_bad_tokens(all_tokens)
 
 
 # applying the get_keywords function to our dataframe and saving the results
