@@ -1,5 +1,4 @@
 # coding=utf-8
-import fastText
 import deepmatcher as dm
 import pandas as pd
 import torch
@@ -7,11 +6,11 @@ import torch
 
 def prepare_dataset():
     train, validation, test = dm.data.process(
-        path='data/sample_data/itunes-amazon',
-        train='train.csv',
-        validation='validation.csv',
-        test='test.csv',
-        ignore_columns=['left_id', 'right_id'],
+        path='data/sigmod/',
+        train='x2_train.csv',
+        validation='x2_train.csv',
+        test='x2_train.csv',
+        ignore_columns=['left_instance_id', 'right_instance_id'],
         left_prefix='left_',
         right_prefix='right_',
         label_attr='label',
@@ -36,8 +35,8 @@ def train(model, datasets):
     model.run_train(
         datasets['train'],
         datasets['val'],
-        epochs=10,
-        batch_size=16,
+        epochs=20,
+        batch_size=128,
         best_save_path='hybrid_model.pth',
         pos_neg_ratio=3)
 
@@ -50,4 +49,5 @@ if __name__ == '__main__':
     model = create_model()
 
     # Train the model
-    train()
+    train(model, datasets)
+
