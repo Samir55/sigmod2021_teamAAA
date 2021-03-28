@@ -41,7 +41,7 @@ def remove_bad_tokens(tokens):
 def pre_process_record(record):
     idx = df_2.index.get_loc(record.name)
 
-    for column in df_2.columns:
+    for column in df_2.columns[1:]:
         tokens = remove_bad_tokens(get_keywords(record, column))
         df_2.iloc[idx][column] = tokens
 
@@ -69,7 +69,7 @@ df_2['tokens'] = df_2['brand'] + df_2['cpu_brand'] + df_2['cpu_model'] + df_2['c
 df_2['tokens'] = df_2['tokens'].apply(remove_bad_tokens)
 # df_2['tokens'] = df_2.apply(gather_tokens, axis=1)
 
-print(df_2['title'].head(5))
+#print(df_2['title'].head(5))
 
 x = 00
 
