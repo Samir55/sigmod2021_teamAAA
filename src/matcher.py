@@ -1,9 +1,5 @@
 # coding=utf-8
-import deepmatcher as dm
-import pandas as pd
-import torch
-
-# coding=utf-8
+import fastText
 import deepmatcher as dm
 import pandas as pd
 import torch
@@ -33,7 +29,6 @@ def prepare_dataset():
 
 def create_model():
     model = dm.MatchingModel(attr_summarizer='hybrid')
-
     return model
 
 
@@ -45,7 +40,6 @@ def train(model, datasets):
         batch_size=16,
         best_save_path='hybrid_model.pth',
         pos_neg_ratio=3)
-
 
 
 if __name__ == '__main__':
