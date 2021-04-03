@@ -7,9 +7,10 @@ import torch
 def prepare_dataset():
     train, validation, test = dm.data.process(
         path='data/sigmod/',
-        train='x2_train.csv',
-        validation='x2_train.csv',
-        test='x2_train.csv',
+        train=None,
+        validation=None,
+        test="x2_test.csv",
+        unlabeled=None,
         ignore_columns=['left_instance_id', 'right_instance_id'],
         left_prefix='left_',
         right_prefix='right_',
@@ -41,13 +42,23 @@ def train(model, datasets):
         pos_neg_ratio=3)
 
 
+def post_process():
+    pass
+
+
 if __name__ == '__main__':
+    evaluate = False
+
     # Read the datasets
     datasets = prepare_dataset()
 
     # Create the model
     model = create_model()
 
-    # Train the model
-    train(model, datasets)
+    if evaluate:
+        model.load_state_dict("hybrid_model.pth")
+        model.run_eval(datasets['test'], batch_size=32, device=None, progress_style='bar', log_freq=5,
+                       sort_in_buckets=None)
 
+    # Train the model
+    # train(model, datasets)
