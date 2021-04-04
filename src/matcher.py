@@ -1,15 +1,20 @@
 # coding=utf-8
+import copy
+
 import deepmatcher as dm
+import dill
 import pandas as pd
+import six
 import torch
+from deepmatcher.data import MatchingDataset
 
 
-def prepare_dataset():
+def prepare_dataset_for_train():
     train, validation, test = dm.data.process(
         path='data/sigmod/',
-        train=None,
-        validation=None,
-        test="x2_test.csv",
+        train='x2_train.csv',
+        validation='x2_train.csv',
+        test=None,
         unlabeled=None,
         ignore_columns=['left_instance_id', 'right_instance_id'],
         left_prefix='left_',
@@ -25,6 +30,16 @@ def prepare_dataset():
         'val': validation,
         'test': test
     }
+
+
+def test(model):
+    unlabeled = dm.data.process_unlabeled(
+        path='data/sigmod/x2_test.csv',
+        trained_model=model
+    )
+
+    predictions = model.run_prediction(unlabeled)
+    predictions.to_csv('results.csv')
 
 
 def create_model():
@@ -47,18 +62,35 @@ def post_process():
 
 
 if __name__ == '__main__':
-    evaluate = False
-
-    # Read the datasets
-    datasets = prepare_dataset()
+    evaluate = True
 
     # Create the model
     model = create_model()
 
     if evaluate:
-        model.load_state_dict("hybrid_model.pth")
-        model.run_eval(datasets['test'], batch_size=32, device=None, progress_style='bar', log_freq=5,
-                       sort_in_buckets=None)
+        state = torch.load("hybrid_model.pth", map_location=torch.device('cpu'), pickle_module=dill)
+        for k, v in six.iteritems(state):
+            if k != 'model':
+                model._train_buffers.add(k)
+                setattr(model, k, v)
 
-    # Train the model
-    # train(model, datasets)
+        if hasattr(model, 'state_meta'):
+            train_info = copy.copy(model.state_meta)
+
+            # Handle metadata manually.
+            # TODO (Sid): Make this cleaner.
+            train_info.metadata = train_info.orig_metadata
+            MatchingDataset.finalize_metadata(train_info)
+
+            model.initialize(train_info, model.state_meta.init_batch)
+
+        model.load_state_dict(state['model'])
+
+        test(model)
+
+    else:
+        # Read the datasets
+        datasets = prepare_dataset_for_train()
+
+        # Train the model
+        train(model, datasets)
