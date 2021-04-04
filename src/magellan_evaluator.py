@@ -3,16 +3,30 @@ import py_entitymatching as em
 import pandas as pd
 import os
 import joblib
+import sys
 
 if __name__ == '__main__':
+    # Get the arguments
+    n = len(sys.argv)
+    print("Total arguments passed:", n)
+
+    # Arguments passed
+    print("\nName of Python script:", sys.argv[0])
+
+    print("\nArguments passed:", end=" ")
+    for i in range(1, n):
+        print(sys.argv[i], end=" ")
+
+    test_csv_file = sys.argv[1]
+
     # Read the dataset / Clean / Save
-    A = pd.read_csv('X2.csv')
+    A = pd.read_csv(test_csv_file)
     A = A.fillna(-999)
-    A.to_csv('X2_cleaned.csv', index=False)
+    A.to_csv('X_cleaned.csv', index=False)
 
     # Reread the cleaned dataset
-    A = em.read_csv_metadata('X2_cleaned.csv', key='instance_id')
-    B = em.read_csv_metadata('X2_cleaned.csv', key='instance_id')
+    A = em.read_csv_metadata('X_cleaned.csv', key='instance_id')
+    B = em.read_csv_metadata('X_cleaned.csv', key='instance_id')
 
     print('Number of tuples in A: ' + str(len(A)))
     print('Number of tuples in B: ' + str(len(B)))
@@ -52,7 +66,7 @@ if __name__ == '__main__':
                                 attrs_before=attrs_from_table,
                                 show_progress=True, n_jobs=-1)
 
-    loaded_rf = joblib.load("./random_forest.joblib")
+    loaded_rf = joblib.load("../trained_models/random_forest.joblib")
 
     # Predict the matches
     predictions = loaded_rf.predict(table=L, exclude_attrs=attrs_to_be_excluded,
@@ -72,3 +86,4 @@ if __name__ == '__main__':
 
 
     ret = prepare_sigmod_output(predictions)
+    ret.to_csv('output.csv', index=False)
