@@ -66,7 +66,7 @@ if __name__ == '__main__':
                                 attrs_before=attrs_from_table,
                                 show_progress=True, n_jobs=-1)
 
-    loaded_rf = joblib.load("trained_models/random_forest.joblib")
+    loaded_rf = joblib.load("../trained_models/random_forest.joblib")
 
     # Predict the matches
     predictions = loaded_rf.predict(table=L, exclude_attrs=attrs_to_be_excluded,
