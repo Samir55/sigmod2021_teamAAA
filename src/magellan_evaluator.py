@@ -13,14 +13,15 @@ def preprocess_laptop_dataset(df):
     multispace_regex = re.compile(r'\s\s+')
 
     for column in df.columns:
+        if column == 'instance_id':
+            continue
         df[column] = df[column].str.lower().str.replace(irrelevant_regex, ' ').str.replace(multispace_regex, ' ')
 
     # Count the number of nans in a certain row and remove records with more than 3 nans
-    nans_count = df.isnull().sum(axis=1)
-    mask = nans_count > 3
-    print("removing {} records containing nans".format(len(df[mask])))
-    print(df[mask].head())
-    df = df[~mask]
+#     nans_count = df.isnull().sum(axis=1)
+#     mask = nans_count > 4
+#     print("removing {} records containing nans".format(len(df[mask])))
+#     df = df[~mask]
 
     # Brand assignment
     all_brands = set()
@@ -78,9 +79,7 @@ def preprocess_laptop_dataset(df):
     df['ram_capacity'] = df.apply(assign_ram_capacity, axis=1)
 
     # Unit stand. in weight
-
-    # Save the cleaned dataset
-    df.to_csv('X_cleaned.csv', index=False)
+    return df
 
 
 if __name__ == '__main__':
@@ -100,7 +99,8 @@ if __name__ == '__main__':
     # Read the dataset / Clean / Save
     A = pd.read_csv("X2.csv")
     A = A.fillna(-999)
-    preprocess_laptop_dataset(A)
+    A = preprocess_laptop_dataset(A)
+    A.to_csv('X_cleaned.csv', index=False)
     sys.stderr.write("Reading Files Succeeded\n")
 
     # Reread the cleaned dataset
