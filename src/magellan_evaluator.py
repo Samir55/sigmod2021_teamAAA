@@ -76,6 +76,8 @@ def preprocess_laptop_dataset(df):
 
         return 0
 
+
+
     df['ram_capacity'] = df.apply(assign_ram_capacity, axis=1)
 
     df = df.fillna(-999)
