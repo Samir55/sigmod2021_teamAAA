@@ -66,8 +66,8 @@ def clean_laptops_dataset(x_org):
     sp = spacy.load('en_core_web_sm')
 
     # Read helper datasets stats
-    extra_brands = set(pd.read_csv('../../data/sigmod/laptops.csv').Company.str.lower().unique())
-    screen_sizes = set(pd.read_csv('../../data/sigmod/laptops.csv').Inches)
+    extra_brands = set(pd.read_csv('../../data/sigmod/laptops.csv', encoding='windows-1251').Company.str.lower().unique())
+    screen_sizes = set(pd.read_csv('../../data/sigmod/laptops.csv', encoding='windows-1251').Inches)
     screen_sizes = [str(formatNumber(str(s).lower())) for s in screen_sizes]
 
     # Keep only Alpha numeric

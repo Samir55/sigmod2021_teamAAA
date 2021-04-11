@@ -27,9 +27,9 @@ def dedupe_train(params: DictConfig):
 
     # Get the fields
     if params.dataset_type == 'laptops':
-        screen_sizes = set(pd.read_csv('../../data/sigmod/laptops.csv').Inches)
+        screen_sizes = set(pd.read_csv('../../data/sigmod/laptops.csv', encoding='windows-1251').Inches)
         screen_sizes = [str(formatNumber(str(s).lower())) for s in screen_sizes]
-        extra_brands = set(pd.read_csv('../../data/sigmod/laptops.csv').Company.str.lower().unique())
+        extra_brands = set(pd.read_csv('../../data/sigmod/laptops.csv', encoding='windows-1251').Company.str.lower().unique())
 
         fields = [{'field': 'brand', 'type': 'Exact', 'has_missing': True},
                   {'field': 'cpu_brand', 'type': 'Exact', 'has_missing': True},

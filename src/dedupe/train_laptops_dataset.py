@@ -34,6 +34,6 @@ if __name__ == '__main__':
     params.recall = 0.9
     params.blocked_proportion = 0.9
     params.index_predicates = True
-    params.num_cores = 14
+    params.num_cores = 77
 
     dedupe_train(params)
