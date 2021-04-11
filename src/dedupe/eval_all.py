@@ -84,14 +84,19 @@ if __name__ == '__main__':
         x2 = rem[0]
 
     # Now, we evaluate based on the trained models
-    print("evaluating X2 dataset")
+    print("Cleaning X2 dataset")
     x2 = clean_laptops_dataset(x2)
+    print("Evaluating X2 dataset")
     # output.append(deduper_eval('x2', x2))
-    print("evaluating X3 dataset")
+
+    print("Cleaning X3 dataset")
     x3 = clean_laptops_dataset(x3)
+    print("Evaluating X3 dataset")
     # output.append(deduper_eval('x3', x3))
-    print("evaluating X4 dataset")
+
+    print("Cleaning X4 dataset")
     x4 = clean_products_dataset(x4)
+    print("Evaluating X4 dataset")
     output.append(deduper_eval('x4', x4))
 
     output.to_csv('output.csv', index=False)
