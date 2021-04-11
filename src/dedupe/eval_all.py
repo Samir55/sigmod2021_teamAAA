@@ -3,7 +3,7 @@ import time
 import dedupe
 import pandas as pd
 
-from src.dedupe.clean_datasets import clean_laptops_dataset, clean_products_dataset
+from clean_datasets import clean_laptops_dataset, clean_products_dataset
 
 LOCAL = True
 
