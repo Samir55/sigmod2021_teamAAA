@@ -12,9 +12,11 @@ if __name__ == '__main__':
     params.columns = ['name', 'brand', 'size', 'product_type']
     params.training_file = 'tmp_products_train_data.json'
 
-    params.sample_size = 50
+    params.sample_size = 1500
     params.recall = 0.9
     params.blocked_proportion = 0.9
-    params.index_predicates = False
+    params.num_cores = 77
+    params.index_predicates = True
+
 
     dedupe_train(params)
