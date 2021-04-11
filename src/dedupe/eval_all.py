@@ -1,5 +1,9 @@
+import time
+
 import dedupe
 import pandas as pd
+
+from src.dedupe.clean_datasets import clean_laptops_dataset, clean_products_dataset
 
 partition_threshold = {
     'x2': 0.5,
@@ -10,7 +14,7 @@ partition_threshold = {
 
 def deduper_eval(dataset_type: str, dataset):
     # Create deduper model
-    with open('trained_{}_settings.json'.format(dataset_type), 'rb') as fin:
+    with open('../../trained_models/deduper/trained_{}_settings.json'.format(dataset_type), 'rb') as fin:
         deduper = dedupe.StaticDedupe(fin)
 
     # Prepare the data
@@ -48,6 +52,8 @@ def deduper_eval(dataset_type: str, dataset):
 
 
 if __name__ == '__main__':
+    start_time = time.time()
+    print("Start")
     # Read the datasets
     s_x2 = pd.read_csv('../../data/sigmod/X2.csv')
     s_x3 = pd.read_csv('../../data/sigmod/X3.csv')
@@ -71,13 +77,22 @@ if __name__ == '__main__':
     # Determine x2 and x3
     output = pd.DataFrame(columns=['left_instance_id', 'right_instance_id'])
     if len(rem[0]) > len(rem[1]):
-        x3 = rem[0], x2 = rem[1]
+        x3 = rem[0]
+        x2 = rem[1]
     else:
-        x3 = rem[1], x2 = rem[0]
+        x3 = rem[1]
+        x2 = rem[0]
 
     # Now, we evaluate based on the trained models
-    output.append(deduper_eval('x2', x2))
-    output.append(deduper_eval('x3', x3))
+    print("evaluating X2 dataset")
+    x2 = clean_laptops_dataset(x2)
+    # output.append(deduper_eval('x2', x2))
+    print("evaluating X3 dataset")
+    x3 = clean_laptops_dataset(x3)
+    # output.append(deduper_eval('x3', x3))
+    print("evaluating X4 dataset")
+    x4 = clean_products_dataset(x4)
     output.append(deduper_eval('x4', x4))
 
     output.to_csv('output.csv', index=False)
+    print("Total elapsed time: {.2f}".format(time.time() - start_time))
