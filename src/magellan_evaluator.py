@@ -7,7 +7,83 @@ import sys
 import re
 
 
+def preprocess_laptop_dataset(df):
+    # Alpha numeric
+    irrelevant_regex = re.compile(r'[^a-z0-9.\-\s]')
+    multispace_regex = re.compile(r'\s\s+')
 
+    for column in df.columns:
+        if column == 'instance_id':
+            continue
+        df[column] = df[column].str.lower().str.replace(irrelevant_regex, ' ').str.replace(multispace_regex, ' ')
+
+    # Count the number of nans in a certain row and remove records with more than 3 nans
+    #     nans_count = df.isnull().sum(axis=1)
+    #     mask = nans_count > 4
+    #     print("removing {} records containing nans".format(len(df[mask])))
+    #     df = df[~mask]
+
+    # Brand assignment
+    all_brands = set()
+    extra_brands = set(pd.read_csv('laptops.csv').Company.str.lower().unique())
+    all_brands.update(extra_brands)
+
+    def assign_brand(record):
+        # Search in brand first
+        if record['brand'] in all_brands:
+            return record['brand']
+        # then in the title
+        for el in all_brands:
+            if el in record['title']:
+                return el
+        return "NNN"
+
+    df['brand'] = df.apply(assign_brand, axis=1)
+
+    # cpu brand
+    def assign_cpu_brand(record):
+        # Search in brand first
+        if 'intel' in str(record['cpu_brand']) or 'intel' in str(record['title']) or \
+                'intel' in str(record['cpu_model']) or 'intel' in str(record['cpu_type']):
+            return 'intel'
+        return 'amd'
+
+    df['cpu_brand'] = df.apply(assign_cpu_brand, axis=1)
+
+    # cpu model
+    def assign_cpu_model(record):
+        if record['cpu_brand'] == 'intel':
+            pass
+        else:
+            pass
+
+    # ram capacity
+    def assign_ram_capacity(record):
+        s = str(record['ram_capacity']).replace(' ', '')
+        possible_vals = ['2gb', '4gb', '6gb', '8gb', '10gb', '12gb', '16gb',
+                         '32gb', '64gb', '128gb', '256gb', '512gb', '2', '4',
+                         '6', '8', '10', '12', '16', '32', '64', '128']
+        for val in possible_vals:
+            if val in s:
+                return int(val.replace('gb', ''))
+
+        s = str(record['title']).replace(' ', '')  # This will be wrong, please change
+        possible_vals = ['2gb', '4gb', '6gb', '8gb', '10gb', '12gb', '16gb',
+                         '32gb', '64gb', '128gb']
+        for val in possible_vals:
+            if val in s:
+                return int(val.replace('gb', ''))
+
+        return 0
+
+
+
+    df['ram_capacity'] = df.apply(assign_ram_capacity, axis=1)
+
+    df = df.fillna(-999)
+
+    # Unit stand. in weight
+    return df
 
 
 if __name__ == '__main__':
