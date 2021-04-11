@@ -8,6 +8,10 @@ from src.dedupe.clean_datasets import clean_laptops_dataset, clean_products_data
 
 
 def dedupe_train(params: DictConfig):
+    # Print parameters
+    print("Parameters used")
+    print(params)
+
     # Read the dataset
     print("Reading the datasets.")
     x_org = pd.read_csv(params.train_dataset_path)
@@ -27,15 +31,15 @@ def dedupe_train(params: DictConfig):
         screen_sizes = [str(formatNumber(str(s).lower())) for s in screen_sizes]
         extra_brands = set(pd.read_csv('../../data/sigmod/laptops.csv').Company.str.lower().unique())
 
-        fields = [{'field': 'brand', 'type': 'Categorical', 'categories': extra_brands},
-                  {'field': 'cpu_brand', 'type': 'Categorical', 'categories': ['amd', 'intel']},
+        fields = [{'field': 'brand', 'type': 'Exact', 'has_missing': True},
+                  {'field': 'cpu_brand', 'type': 'Exact', 'has_missing': True},
                   # {'field' : 'cpu_model', 'type': 'String', 'has_missing' : True},
-                  {'field': 'cpu_type', 'type': 'Exact', 'has_missing': False},
-                  {'field': 'ram_capacity', 'type': 'Price', 'has_missing': False},
-                  {'field': 'hdd_capacity', 'type': 'Price', 'has_missing': False},
-                  {'field': 'ssd_capacity', 'type': 'Price', 'has_missing': False},
-                  {'field': 'title', 'type': 'Text', 'has_missing': False},
-                  {'field': 'screen_size', 'type': 'Categorical', 'has_missing': False, 'categories': screen_sizes},
+                  {'field': 'cpu_type', 'type': 'Exact', 'has_missing': True},
+                  {'field': 'ram_capacity', 'type': 'Exact', 'has_missing': True},
+                  {'field': 'hdd_capacity', 'type': 'Exact', 'has_missing': True},
+                  {'field': 'ssd_capacity', 'type': 'Exact', 'has_missing': True},
+                  {'field': 'title', 'type': 'Text', 'has_missing': True},
+                  {'field': 'screen_size', 'type': 'Categorical', 'has_missing': True, 'categories': screen_sizes},
                   {'field': 'model', 'type': 'String', 'has_missing': True}]
     else:
         fields = [
@@ -50,7 +54,7 @@ def dedupe_train(params: DictConfig):
 
     # Create deduper model
     print("Creating dedupe model.")
-    deduper = dedupe.Dedupe(fields)
+    deduper = dedupe.Dedupe(fields, num_cores=14)
 
     # Get the label data
     y = pd.read_csv(params.label_dataset_path)

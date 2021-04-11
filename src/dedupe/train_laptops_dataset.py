@@ -30,9 +30,9 @@ if __name__ == '__main__':
         'screen_size',
         'model']
     params.training_file = 'tmp_products_train_data.json'
-    params.sample_size = 50
+    params.sample_size = 1500
     params.recall = 0.9
     params.blocked_proportion = 0.9
-    params.index_predicates = False
+    params.index_predicates = False  # TODO make true
 
     dedupe_train(params)

@@ -5,6 +5,8 @@ import pandas as pd
 
 from src.dedupe.clean_datasets import clean_laptops_dataset, clean_products_dataset
 
+LOCAL = True
+
 partition_threshold = {
     'x2': 0.5,
     'x3': 0.5,
@@ -76,18 +78,23 @@ if __name__ == '__main__':
 
     # Determine x2 and x3
     output = pd.DataFrame(columns=['left_instance_id', 'right_instance_id'])
-    if len(rem[0]) > len(rem[1]):
-        x3 = rem[0]
-        x2 = rem[1]
+    if not LOCAL:
+        if len(rem[0]) > len(rem[1]):
+            x3 = rem[0]
+            x2 = rem[1]
+        else:
+            x3 = rem[1]
+            x2 = rem[0]
     else:
-        x3 = rem[1]
-        x2 = rem[0]
+        x2 = s_x2
+        x3 = s_x3
+        x4 = s_x4
 
     # Now, we evaluate based on the trained models
     print("Cleaning X2 dataset")
     x2 = clean_laptops_dataset(x2)
     print("Evaluating X2 dataset")
-    # output.append(deduper_eval('x2', x2))
+    output.append(deduper_eval('x2', x2))
 
     print("Cleaning X3 dataset")
     x3 = clean_laptops_dataset(x3)
@@ -97,7 +104,7 @@ if __name__ == '__main__':
     print("Cleaning X4 dataset")
     x4 = clean_products_dataset(x4)
     print("Evaluating X4 dataset")
-    output.append(deduper_eval('x4', x4))
+    # output.append(deduper_eval('x4', x4))
 
     output.to_csv('output.csv', index=False)
     print("Total elapsed time: {}".format(time.time() - start_time))
