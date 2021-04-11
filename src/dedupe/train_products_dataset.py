@@ -1,5 +1,5 @@
 from omegaconf import OmegaConf
-from src.dedupe.deduper_trainer import dedupe_train
+from deduper_trainer import dedupe_train
 
 if __name__ == '__main__':
     params = OmegaConf.create()

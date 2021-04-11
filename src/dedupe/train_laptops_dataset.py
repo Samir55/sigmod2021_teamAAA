@@ -1,6 +1,6 @@
 import argparse
 from omegaconf import OmegaConf
-from src.dedupe.deduper_trainer import dedupe_train
+from deduper_trainer import dedupe_train
 
 
 def parse_args():
@@ -33,6 +33,7 @@ if __name__ == '__main__':
     params.sample_size = 1500
     params.recall = 0.9
     params.blocked_proportion = 0.9
-    params.index_predicates = False  # TODO make true
+    params.index_predicates = True
+    params.num_cores = 14
 
     dedupe_train(params)

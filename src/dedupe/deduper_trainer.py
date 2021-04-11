@@ -54,7 +54,7 @@ def dedupe_train(params: DictConfig):
 
     # Create deduper model
     print("Creating dedupe model.")
-    deduper = dedupe.Dedupe(fields, num_cores=14)
+    deduper = dedupe.Dedupe(fields, num_cores=params.num_cores)
 
     # Get the label data
     y = pd.read_csv(params.label_dataset_path)
