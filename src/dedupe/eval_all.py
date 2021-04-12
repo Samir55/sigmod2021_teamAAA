@@ -17,7 +17,7 @@ partition_threshold = {
 def deduper_eval(dataset_type: str, dataset):
     # Create deduper model
     with open('../../trained_models/deduper/trained_{}_settings.json'.format(dataset_type), 'rb') as fin:
-        deduper = dedupe.StaticDedupe(fin,num_cores=8)
+        deduper = dedupe.StaticDedupe(fin, num_cores=8)
 
     # Prepare the data
     if dataset_type in ['x2', 'x3']:
@@ -94,17 +94,17 @@ if __name__ == '__main__':
     print("Cleaning X2 dataset")
     x2 = clean_laptops_dataset(x2)
     print("Evaluating X2 dataset")
-    output.append(deduper_eval('x2', x2))
+    output = output.append(deduper_eval('x2', x2))
 
     print("Cleaning X3 dataset")
     x3 = clean_laptops_dataset(x3)
     print("Evaluating X3 dataset")
-    output.append(deduper_eval('x3', x3))
+    output = output.append(deduper_eval('x3', x3))
 
     print("Cleaning X4 dataset")
     x4 = clean_products_dataset(x4)
     print("Evaluating X4 dataset")
-    output.append(deduper_eval('x4', x4))
+    output = output.append(deduper_eval('x4', x4))
 
     output.to_csv('output.csv', index=False)
     print("Total elapsed time: {}".format(time.time() - start_time))
