@@ -5,7 +5,7 @@ import pandas as pd
 
 from clean_datasets import clean_laptops_dataset, clean_products_dataset
 
-LOCAL = True
+LOCAL = False
 
 partition_threshold = {
     'x2': 0.5,
@@ -99,12 +99,12 @@ if __name__ == '__main__':
     print("Cleaning X3 dataset")
     x3 = clean_laptops_dataset(x3)
     print("Evaluating X3 dataset")
-    # output.append(deduper_eval('x3', x3))
+    output.append(deduper_eval('x3', x3))
 
     print("Cleaning X4 dataset")
     x4 = clean_products_dataset(x4)
     print("Evaluating X4 dataset")
-    # output.append(deduper_eval('x4', x4))
+    output.append(deduper_eval('x4', x4))
 
     output.to_csv('output.csv', index=False)
     print("Total elapsed time: {}".format(time.time() - start_time))
