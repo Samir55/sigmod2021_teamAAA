@@ -63,7 +63,7 @@ def clean_laptops_dataset(x_org):
     # Set the index
     df.set_index('instance_id', inplace=True, drop=False)
 
-    spacy.cli.download("en_core_web_lg")
+    spacy.cli.download("en_core_web_sm")
     sp = spacy.load('en_core_web_sm')
 
     # Read helper datasets stats
@@ -259,7 +259,7 @@ def clean_laptops_dataset(x_org):
 
 
 def clean_products_dataset(x_org):
-    spacy.cli.download("en_core_web_lg")
+    spacy.cli.download("en_core_web_sm")
 
     x4_dev = convert_numbers_to_strings(x_org, ['price']).copy(deep=True)
     x4_dev.set_index('instance_id', inplace=True)
