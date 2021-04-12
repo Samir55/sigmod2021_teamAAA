@@ -15,7 +15,7 @@ if __name__ == '__main__':
     params.sample_size = 1500
     params.recall = 0.9
     params.blocked_proportion = 0.9
-    params.num_cores = 77
+    params.num_cores = 14
     params.index_predicates = True
 
 
