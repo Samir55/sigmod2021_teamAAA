@@ -8,7 +8,7 @@ from clean_datasets import clean_laptops_dataset, clean_products_dataset
 LOCAL = True
 
 partition_threshold = {
-    'x2': 0.5,
+    'x2': 0.3,
     'x3': 0.3,
     'x4': 0.2,
 }
@@ -97,7 +97,7 @@ if __name__ == '__main__':
     print("Cleaning X2 dataset")
     x2 = clean_laptops_dataset(x2)
     print("Evaluating X2 dataset")
-    # output = output.append(deduper_eval('x2', x2))
+    # output = output.append(deduper_eval('x3', x2))
 
     print("Cleaning X3 dataset")
     x3 = clean_laptops_dataset(x3)
@@ -107,7 +107,7 @@ if __name__ == '__main__':
     print("Cleaning X4 dataset")
     x4 = clean_products_dataset(x4)
     print("Evaluating X4 dataset")
-    output = output.append(deduper_eval('x4', x4))
+    # output = output.append(deduper_eval('x4', x4))
 
     output.to_csv('output.csv', index=False)
     print("Total elapsed time: {}".format(time.time() - start_time))
