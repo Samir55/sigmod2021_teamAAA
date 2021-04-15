@@ -4,7 +4,7 @@ import dedupe
 import pandas as pd
 from omegaconf import OmegaConf, DictConfig
 
-from clean_datasets import clean_laptops_dataset, clean_products_dataset, formatNumber
+from clean_datasets_new import clean_laptops_dataset, clean_products_dataset, formatNumber
 
 
 def dedupe_train(params: DictConfig):
