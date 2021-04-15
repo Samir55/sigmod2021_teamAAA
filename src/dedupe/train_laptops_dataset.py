@@ -21,7 +21,10 @@ if __name__ == '__main__':
     params.columns = [
         'instance_id',
         'brand',
+        'model_name',
+        # 'model_number',
         'cpu_brand',
+        'cpu_model',
         'cpu_type',
         'ram_capacity',
         'hdd_capacity',

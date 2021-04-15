@@ -33,6 +33,8 @@ def dedupe_train(params: DictConfig):
 
         fields = [{'field': 'brand', 'type': 'Exact', 'has_missing': True},
                   {'field': 'cpu_brand', 'type': 'Exact', 'has_missing': True},
+                  {'field': 'cpu_model', 'type': 'Exact', 'has_missing': True},
+                  {'field': 'model_name', 'type': 'Exact', 'has_missing': True},
                   # {'field' : 'cpu_model', 'type': 'String', 'has_missing' : True},
                   {'field': 'cpu_type', 'type': 'Exact', 'has_missing': True},
                   {'field': 'ram_capacity', 'type': 'Exact', 'has_missing': True},
