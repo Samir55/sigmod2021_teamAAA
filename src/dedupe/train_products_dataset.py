@@ -12,7 +12,7 @@ if __name__ == '__main__':
     params.columns = ['name', 'brand', 'size', 'product_type']
     params.training_file = 'tmp_products_train_data.json'
 
-    params.sample_size = 1500
+    params.sample_size = 20000
     params.recall = 0.9
     params.blocked_proportion = 0.9
     params.num_cores = 14

@@ -33,7 +33,7 @@ if __name__ == '__main__':
         'screen_size',
         'model']
     params.training_file = 'tmp_products_train_data.json'
-    params.sample_size = 1500
+    params.sample_size = 20000
     params.recall = 0.9
     params.blocked_proportion = 0.9
     params.index_predicates = True
