@@ -3,20 +3,20 @@ import time
 import dedupe
 import pandas as pd
 
-from clean_datasets import clean_laptops_dataset, clean_products_dataset
+from clean_datasets_new import clean_laptops_dataset, clean_products_dataset
 
 LOCAL = False
 
 partition_threshold = {
-    'x2': 0.5,
-    'x3': 0.5,
-    'x4': 0.5,
+    'x2': 0.3,
+    'x3': 0.3,
+    'x4': 0.37,
 }
 
 
 def deduper_eval(dataset_type: str, dataset):
     # Create deduper model
-    with open('../../trained_models/deduper/trained_{}_settings.json'.format(dataset_type), 'rb') as fin:
+    with open('../../trained_models/deduper/sub_4/trained_{}_settings.json'.format(dataset_type), 'rb') as fin:
         deduper = dedupe.StaticDedupe(fin, num_cores=8)
 
     # Prepare the data
