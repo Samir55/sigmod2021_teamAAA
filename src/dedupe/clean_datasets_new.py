@@ -119,7 +119,7 @@ def clean_laptops_dataset(x_org):
 
     df['new_title'] = df.apply(clean_title, axis=1)
     irrelevant_regex = re.compile(r'[^a-z0-9.\s]')
-    multispace_regex = re.compile(r'\s\s+')  # TODO @Ahmed look at this
+    multispace_regex = re.compile(r'\s\s+')
     df['new_title'] = df.new_title.str.lower().str.replace(irrelevant_regex, '').str.replace(multispace_regex, ' ')
     df['new_title_tokens'] = df.apply(tokenize_new_tile, axis=1)
 
@@ -377,6 +377,18 @@ def clean_laptops_dataset(x_org):
             return None
 
     df['cpu_frequency'] = df.apply(assign_cpu_frequency, axis=1)
+
+    def assign_new_title(record):
+        # Remove extracted data from the title
+
+        # Remove model name
+        record['new_title'] = record['nwe_titl']
+
+        # Remove brand
+        # Remove screen size
+        # Remove cpu brand
+        # Remove cpu type
+        # Ram capacity, hdd capacity, ssd capacity
 
     return df
 
