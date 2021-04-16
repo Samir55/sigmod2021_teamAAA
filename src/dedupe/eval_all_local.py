@@ -3,7 +3,7 @@ import time
 import dedupe
 import pandas as pd
 
-from clean_datasets import clean_laptops_dataset, clean_products_dataset
+from clean_datasets_new import clean_laptops_dataset, clean_products_dataset
 
 LOCAL = True
 
@@ -13,13 +13,14 @@ partition_threshold = {
     'x4': 0.2,
 }
 
+
 # Notes
 # Sub 2 and sub 3 are different only on x4 model
 # sub3 0.37 --> F: 63.9, P: 52, R: 80
 
 def deduper_eval(dataset_type: str, dataset):
     # Create deduper model
-    with open('../../trained_models/deduper/sub_3/trained_{}_settings.json'.format(dataset_type), 'rb') as fin:
+    with open('../../trained_models/deduper/sub_4/trained_{}_settings.json'.format(dataset_type), 'rb') as fin:
         deduper = dedupe.StaticDedupe(fin, num_cores=8)
 
     # Prepare the data
@@ -27,7 +28,10 @@ def deduper_eval(dataset_type: str, dataset):
         cols = [
             'instance_id',
             'brand',
+            'model_name',
+            # 'model_number',
             'cpu_brand',
+            'cpu_model',
             'cpu_type',
             'ram_capacity',
             'hdd_capacity',
@@ -97,12 +101,12 @@ if __name__ == '__main__':
     print("Cleaning X2 dataset")
     x2 = clean_laptops_dataset(x2)
     print("Evaluating X2 dataset")
-    # output = output.append(deduper_eval('x3', x2))
+    # output = output.append(deduper_eval('x2', x2))
 
     print("Cleaning X3 dataset")
     x3 = clean_laptops_dataset(x3)
     print("Evaluating X3 dataset")
-    # output = output.append(deduper_eval('x3', x3))
+    output = output.append(deduper_eval('x3', x3))
 
     print("Cleaning X4 dataset")
     x4 = clean_products_dataset(x4)
