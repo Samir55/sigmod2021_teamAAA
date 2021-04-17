@@ -63,7 +63,7 @@ def clean_laptops_dataset(x_org):
     # Set the index
     df.set_index('instance_id', inplace=True, drop=False)
 
-    spacy.cli.download("en_core_web_sm")
+    # spacy.cli.download("en_core_web_sm")
     sp = spacy.load('en_core_web_sm')
 
     # Read helper datasets stats
@@ -184,7 +184,7 @@ def clean_laptops_dataset(x_org):
             return None
         else:
             m = m.group()
-            return re.sub(r'([gm]b)', "", m)  # remove MB and GB
+            return re.sub(r'([gm]b)', "gb", m)
 
     def assign_hdd_capacity(record):
         s = str(record['hdd_capacity']).replace(' ', '')
@@ -194,17 +194,17 @@ def clean_laptops_dataset(x_org):
             return 0
 
         if re.search("\d{3,4}gb", s):
-            return int(re.findall("\d{3,4}gb", s)[0][:-2])
+            return str(re.findall("\d{3,4}gb", s)[0][:-2]) + ' gb'
         if re.search("\dtb", s):
-            return int(re.findall("\dtb", s)[0][:-2] + '000')
+            return str(re.findall("\dtb", s)[0][:-2] + '000') + ' gb'
         if re.search("\d{3,4}gbhdd", s2):
-            return int(re.findall("\d{3,4}gbhdd", s2)[0][:-5])
+            return str(re.findall("\d{3,4}gbhdd", s2)[0][:-5]) + ' gb'
         if re.search("hdd\d{3,4}gb", s2):
-            return int(re.findall("hdd\d{3,4}gb", s2)[0][3:-2])
+            return str(re.findall("hdd\d{3,4}gb", s2)[0][3:-2]) + ' gb'
         if re.search("hdd\d{1}tb", s2):
-            return int(re.findall("hdd\d{1}tb", s2)[0][3:4] + '000')
+            return str(re.findall("hdd\d{1}tb", s2)[0][3:4] + '000') + ' gb'
         if re.search("\d{1}tbhdd", s2):
-            return int(re.findall("\d{1}tbhdd", s2)[0][0] + '000')
+            return str(re.findall("\d{1}tbhdd", s2)[0][0] + '000') + ' gb'
         return None
 
     df['hdd_capacity'] = df.apply(assign_hdd_capacity, axis=1)
@@ -214,18 +214,32 @@ def clean_laptops_dataset(x_org):
         s2 = str(record['title'].replace(' ', ''))
 
         if re.search("\d{3,4}gb", s):
-            return int(re.findall("\d{3,4}gb", s)[0][:-2])
+            return str(re.findall("\d{3,4}gb", s)[0][:-2]) + ' gb'
         if re.search("\dtb", s):
-            return int(re.findall("\dtb", s)[0][:-2] + '000')
+            return str(re.findall("\dtb", s)[0][:-2] + '000') + ' gb'
         if re.search("\d{3,4}gbssd", s2):
-            return int(re.findall("\d{3,4}gbssd", s2)[0][:-5])
+            return str(re.findall("\d{3,4}gbssd", s2)[0][:-5]) + ' gb'
         if re.search("ssd\d{3,4}gb", s2):
-            return int(re.findall("ssd\d{3,4}gb", s2)[0][3:-2])
+            return str(re.findall("ssd\d{3,4}gb", s2)[0][3:-2]) + ' gb'
         if re.search("ssd\d{1}tb", s2):
-            return int(re.findall("ssd\d{1}tb", s2)[0][3:4] + '000')
+            return str(re.findall("ssd\d{1}tb", s2)[0][3:4] + '000') + ' gb'
         if re.search("\d{1}tbssd", s2):
-            return int(re.findall("\d{1}tbssd", s2)[0][0] + '000')
+            return str(re.findall("\d{1}tbssd", s2)[0][0] + '000') + ' gb'
         return None
+
+        # if re.search("\d{3,4}gbssd", s):
+        #     return str(re.findall("\d{3,4}gb", s)[0][:-2]) + ' gb'
+        # if re.search("\dtbssd", s):
+        #     return str(re.findall("\dtb", s)[0][:-2] + '000') + ' gb'
+        # if re.search("\d{3,4}gbssd", s2):
+        #     return str(re.findall("\d{3,4}gbssd", s2)[0][:-5]) + ' gb'
+        # if re.search("ssd\d{3,4}gb", s2):
+        #     return str(re.findall("ssd\d{3,4}gb", s2)[0][3:-2]) + ' gb'
+        # if re.search("ssd\d{1}tb", s2):
+        #     return str(re.findall("ssd\d{1}tb", s2)[0][3:4] + '000') + ' gb'
+        # if re.search("\d{1}tbssd", s2):
+        #     return str(re.findall("\d{1}tbssd", s2)[0][0] + '000') + ' gb'
+        # return None
 
     df['ssd_capacity'] = df.apply(assign_ssd_capacity, axis=1)
 
@@ -304,34 +318,16 @@ def clean_laptops_dataset(x_org):
 
     # df['model_number'] = df.apply(assign_model_number)
 
-    def assign_cpu_type(record):
-        # Find the cpu type
-        cpu_list = ["i5", "i3", "i7", "atom",
-                    "pentium", "celeron", "a-series",
-                    "e-series", "aseries", "eseries",
-                    "a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8", "a9"]
-
-        for cpu in cpu_list:
-            if record['cpu_type'] is not None and cpu in record['cpu_type']:
-                return cpu
-            if cpu in record['title']:
-                return cpu
-            if record['cpu_model'] is not None and cpu in record['cpu_model']:
-                return cpu
-            if record['cpu_frequency'] is not None and cpu in record['cpu_frequency']:
-                return cpu
-
-            if re.search("e-[0-9]{3}", record['title']):
-                return re.findall("e-[0-9]{3}", record['title'])[0]
-
-            if record['cpu_model'] is not None and re.search("e-[0-9]{3}", record['cpu_model']):
-                return re.findall("e-[0-9]{3}", record['cpu_model'])[0]
-
-    df['cpu_type'] = df.apply(assign_cpu_type, axis=1)
-
     def assign_cpu_model(record):
         model = record['cpu_model']
-        regex = re.compile(r"-?\d{1,4}([mu])")  # For intel cpus
+        if record['cpu_type'] is not None:
+            if model is not None:
+                model += ' '
+                model += record['cpu_type']
+            else:
+                model = record['cpu_type']
+
+        regex = re.compile(r"-?\d{3,4}([mul]{1,2})")  # For intel cpus
         regex2 = re.compile(r"[ea]\d?-\d{1,4}[m]?")  # for amd A and E series. Needs detection after AMD tag in title
         m = None
         if record['cpu_brand'] == 'intel' and model is not None:
@@ -358,6 +354,35 @@ def clean_laptops_dataset(x_org):
             return None
 
     df['cpu_model'] = df.apply(assign_cpu_model, axis=1)
+
+    def assign_cpu_type(record):
+        # Find the cpu type
+        cpu_list = ["i5", "i3", "i7", "atom",
+                    "pentium", "celeron", "a-series",
+                    "e-series", "aseries", "eseries",
+                    "a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8", "a9"]
+
+        for cpu in cpu_list:
+            if record['cpu_type'] is not None and cpu in str(record['cpu_type']):
+                return cpu
+
+            if record['cpu_model'] is not None and cpu in str(record['cpu_model']):
+                return cpu
+            if record['cpu_frequency'] is not None and cpu in str(record['cpu_frequency']):
+                return cpu
+
+            if cpu in str(record['title']):
+                return cpu
+
+            if re.search("e-[0-9]{3}", record['title']):
+                return re.findall("e-[0-9]{3}", record['title'])[0]
+
+            if record['cpu_model'] is not None and re.search("e-[0-9]{3}", record['cpu_model']):
+                return re.findall("e-[0-9]{3}", record['cpu_model'])[0]
+
+        return None
+
+    df['cpu_type'] = df.apply(assign_cpu_type, axis=1)
 
     def assign_cpu_frequency(record):
         s = record['cpu_frequency']
@@ -389,6 +414,22 @@ def clean_laptops_dataset(x_org):
         # Remove cpu brand
         # Remove cpu type
         # Ram capacity, hdd capacity, ssd capacity
+
+    def assign_cpu(record):
+        cpu_type = record['cpu_type']
+        cpu_model = record['cpu_model']
+
+        res = ""
+        if cpu_type is not None:
+            res += cpu_type
+
+        if cpu_model is not None:
+            res += '-'
+            res += cpu_model
+
+        return res
+
+    df['cpu_model'] = df.apply(assign_cpu, axis=1)
 
     return df
 
