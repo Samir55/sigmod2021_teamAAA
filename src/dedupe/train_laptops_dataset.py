@@ -13,7 +13,7 @@ if __name__ == '__main__':
     args = parse_args()
     params = OmegaConf.create()
 
-    params.dataset_type = 'laptops'
+    params.dataset_type = 'laptops_{}'.format(args.d)
     params.train_dataset_path = "../../data/sigmod/X{}.csv".format(args.d)
     params.label_dataset_path = "../../data/sigmod/Y{}.csv".format(args.d)
     params.save_model_path = "trained_x{}.json".format(args.d)
@@ -33,7 +33,7 @@ if __name__ == '__main__':
         'screen_size',
         'model']
     params.training_file = 'tmp_products_train_data.json'
-    params.sample_size = 20000
+    params.sample_size = 1500
     params.recall = 0.9
     params.blocked_proportion = 0.9
     params.index_predicates = True
