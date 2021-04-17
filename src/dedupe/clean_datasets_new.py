@@ -244,31 +244,54 @@ def clean_laptops_dataset(x_org):
     df['ssd_capacity'] = df.apply(assign_ssd_capacity, axis=1)
 
     def assign_laptop_model(record):
-        brand_tokens = record['new_title_tokens']
-        try:
-            brand_index = brand_tokens.index(str(record['brand']))
-            finish_index = brand_index + 2
-            should_break = False
-            for i in range(2 + brand_index, 5 + brand_index, 1):
-                for sc in screen_sizes:
-                    if (sc in brand_tokens[i]):
-                        should_break = True
-                        break
-                if should_break:
-                    if finish_index == i:
-                        finish_index -= 1
-                    break
-                if not (brand_tokens[i].isalpha()):
-                    finish_index = i
-                else:
-                    break
-        except:
-            brand_index = -1
+        brand = record['brand']
+        t = record['title']
 
-        if brand_index == -1:
-            return None
+        if brand == 'acer':
+            acer_regex = [r'\sv.-.....-?....?', r'\se.-.....-?....?']
+            for r in acer_regex:
+                cr = re.compile(r)
+                if re.search(cr, t):
+                    return re.search(cr, t).group()
 
-        return ' '.join(brand_tokens[brand_index + 1:finish_index + 1])
+        if brand == 'asus':
+            regex = [r'\sux...-.....']
+            for r in regex:
+                cr = re.compile(r)
+                if re.search(cr, t):
+                    return re.search(cr, t).group()
+
+        if brand == 'lenovo':
+            regex = [r'\sx\d{3}\s?\d{0,4}', r'\sx\d{1}\scarbon\s\d{4}', r'\sx\d{1}\scarbon touch\s\d{4}']
+            for r in regex:
+                cr = re.compile(r)
+                if re.search(cr, t):
+                    res = re.search(cr, t).group()
+                    for w in ['carbon', 'touch']:
+                        res = res.replace(w, '')
+                    return res
+
+        if brand == 'hp':
+            regex = [r'\sfolio\s?\d{4}.', r'\selitebook\s?\d{4}.', r'\s\d{2}-.{4,6}']
+            for r in regex:
+                cr = re.compile(r)
+                if re.search(cr, t):
+                    res = re.search(cr, t).group()
+                    for w in ['folio', 'elitebook']:
+                        res = res.replace(w, '')
+                    return res
+
+        if brand == 'dell':
+            regex = [r'\s[nmi]\d{3,4}(-\d{4})?']
+            for r in regex:
+                cr = re.compile(r)
+                if re.search(cr, t):
+                    res = re.search(cr, t).group()
+                    for w in ['folio', 'elitebook']:
+                        res = res.replace(w, '')
+                    return res
+
+        return None
 
     df['model'] = df.apply(assign_laptop_model, axis=1)
     df['ram_capacity'] = df.apply(assign_ram_capacity, axis=1)
