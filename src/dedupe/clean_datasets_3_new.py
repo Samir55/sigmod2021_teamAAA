@@ -63,7 +63,7 @@ def clean_laptops_dataset(x_org):
     # Set the index
     df.set_index('instance_id', inplace=True, drop=False)
 
-    spacy.cli.download("en_core_web_sm")
+    spacy.cli.download("en_core_web_sm") #TODO uncomment
     sp = spacy.load('en_core_web_sm')
 
     # Read helper datasets stats
@@ -75,6 +75,7 @@ def clean_laptops_dataset(x_org):
     # Keep only Alpha numeric
     irrelevant_regex = re.compile(r'[^a-z0-9,.\-\s]')
     multispace_regex = re.compile(r'\s\s+')  # Why it doesn't work
+    multispace_regex_2 = re.compile(r'\s-\s')  # Why it doesn't work
     df.replace({r'[^\x00-\x7F]+': ''}, regex=True, inplace=True)
 
     for column in df.columns:
@@ -101,7 +102,7 @@ def clean_laptops_dataset(x_org):
                     'internationalaccessories',
                     'touch', 'card', 'us', 'bluetooth', 'dvdwriter', 'for', 'new', 'comparison', 'webcam', '(',
                     'laptop',
-                    'accessories', 'brand', 'builtin']
+                    'accessories', 'brand', 'builtin', 'dvd', 'batt', 'walmart.com', 'ebay']
     replace_words = {'hewlett-packard': 'hp'}
 
     def clean_title(record):
@@ -120,7 +121,9 @@ def clean_laptops_dataset(x_org):
     df['new_title'] = df.apply(clean_title, axis=1)
     irrelevant_regex = re.compile(r'[^a-z0-9.\s]')
     multispace_regex = re.compile(r'\s\s+')
-    df['new_title'] = df.new_title.str.lower().str.replace(irrelevant_regex, '').str.replace(multispace_regex, ' ')
+    df['new_title'] = df.new_title.str.lower().str.replace(irrelevant_regex, '').str.replace(multispace_regex,
+                                                                                             ' ').str.replace(
+        multispace_regex_2, ' ')
     df['new_title_tokens'] = df.apply(tokenize_new_tile, axis=1)
 
     # Brand assignment
@@ -184,7 +187,7 @@ def clean_laptops_dataset(x_org):
             return None
         else:
             m = m.group()
-            return re.sub(r'([gm]b)', "", m)  # remove MB and GB
+            return re.sub(r'([gm]b)', "gb", m)
 
     def assign_hdd_capacity(record):
         s = str(record['hdd_capacity']).replace(' ', '')
@@ -194,17 +197,17 @@ def clean_laptops_dataset(x_org):
             return 0
 
         if re.search("\d{3,4}gb", s):
-            return int(re.findall("\d{3,4}gb", s)[0][:-2])
+            return str(re.findall("\d{3,4}gb", s)[0][:-2]) + ' gb'
         if re.search("\dtb", s):
-            return int(re.findall("\dtb", s)[0][:-2] + '000')
+            return str(re.findall("\dtb", s)[0][:-2] + '000') + ' gb'
         if re.search("\d{3,4}gbhdd", s2):
-            return int(re.findall("\d{3,4}gbhdd", s2)[0][:-5])
+            return str(re.findall("\d{3,4}gbhdd", s2)[0][:-5]) + ' gb'
         if re.search("hdd\d{3,4}gb", s2):
-            return int(re.findall("hdd\d{3,4}gb", s2)[0][3:-2])
+            return str(re.findall("hdd\d{3,4}gb", s2)[0][3:-2]) + ' gb'
         if re.search("hdd\d{1}tb", s2):
-            return int(re.findall("hdd\d{1}tb", s2)[0][3:4] + '000')
+            return str(re.findall("hdd\d{1}tb", s2)[0][3:4] + '000') + ' gb'
         if re.search("\d{1}tbhdd", s2):
-            return int(re.findall("\d{1}tbhdd", s2)[0][0] + '000')
+            return str(re.findall("\d{1}tbhdd", s2)[0][0] + '000') + ' gb'
         return None
 
     df['hdd_capacity'] = df.apply(assign_hdd_capacity, axis=1)
@@ -213,48 +216,96 @@ def clean_laptops_dataset(x_org):
         s = str(record['ssd_capacity']).replace(' ', '')
         s2 = str(record['title'].replace(' ', ''))
 
-        if re.search("\d{3,4}gb", s):
-            return int(re.findall("\d{3,4}gb", s)[0][:-2])
-        if re.search("\dtb", s):
-            return int(re.findall("\dtb", s)[0][:-2] + '000')
+        if re.search("\d{3,4}gbssd", s):
+            return str(re.findall("\d{3,4}gb", s)[0][:-2]) + ' gb'
+        if re.search("\dtbssd", s):
+            return str(re.findall("\dtb", s)[0][:-2] + '000') + ' gb'
         if re.search("\d{3,4}gbssd", s2):
-            return int(re.findall("\d{3,4}gbssd", s2)[0][:-5])
+            return str(re.findall("\d{3,4}gbssd", s2)[0][:-5]) + ' gb'
         if re.search("ssd\d{3,4}gb", s2):
-            return int(re.findall("ssd\d{3,4}gb", s2)[0][3:-2])
+            return str(re.findall("ssd\d{3,4}gb", s2)[0][3:-2]) + ' gb'
         if re.search("ssd\d{1}tb", s2):
-            return int(re.findall("ssd\d{1}tb", s2)[0][3:4] + '000')
+            return str(re.findall("ssd\d{1}tb", s2)[0][3:4] + '000') + ' gb'
         if re.search("\d{1}tbssd", s2):
-            return int(re.findall("\d{1}tbssd", s2)[0][0] + '000')
+            return str(re.findall("\d{1}tbssd", s2)[0][0] + '000') + ' gb'
         return None
+
+        # if re.search("\d{3,4}gbssd", s):
+        #     return str(re.findall("\d{3,4}gb", s)[0][:-2]) + ' gb'
+        # if re.search("\dtbssd", s):
+        #     return str(re.findall("\dtb", s)[0][:-2] + '000') + ' gb'
+        # if re.search("\d{3,4}gbssd", s2):
+        #     return str(re.findall("\d{3,4}gbssd", s2)[0][:-5]) + ' gb'
+        # if re.search("ssd\d{3,4}gb", s2):
+        #     return str(re.findall("ssd\d{3,4}gb", s2)[0][3:-2]) + ' gb'
+        # if re.search("ssd\d{1}tb", s2):
+        #     return str(re.findall("ssd\d{1}tb", s2)[0][3:4] + '000') + ' gb'
+        # if re.search("\d{1}tbssd", s2):
+        #     return str(re.findall("\d{1}tbssd", s2)[0][0] + '000') + ' gb'
+        # return None
 
     df['ssd_capacity'] = df.apply(assign_ssd_capacity, axis=1)
 
     def assign_laptop_model(record):
-        brand_tokens = record['new_title_tokens']
-        try:
-            brand_index = brand_tokens.index(str(record['brand']))
-            finish_index = brand_index + 2
-            should_break = False
-            for i in range(2 + brand_index, 5 + brand_index, 1):
-                for sc in screen_sizes:
-                    if (sc in brand_tokens[i]):
-                        should_break = True
-                        break
-                if should_break:
-                    if finish_index == i:
-                        finish_index -= 1
-                    break
-                if not (brand_tokens[i].isalpha()):
-                    finish_index = i
-                else:
-                    break
-        except:
-            brand_index = -1
+        brand = record['brand']
+        t = record['new_title']
 
-        if brand_index == -1:
-            return None
+        if brand == 'acer':
+            regex = [r'\s[esrvmpa]\d-?\s?.....-?....?', r'\s[esrvma]?\d-....', r'\s?acer\saspire\s\d{4}-\d{4}',
+                     r'\s?acer\sextensa\s.{0,2}\d{4}\s?\d{0,4}', r'\s?acer\saspire\sas\d{4}-?\s?\d{4}',
+                     r'\s?acer\saspire\s\d{4}-?\s\d{4}']
+            for r in regex:
+                cr = re.compile(r)
+                if re.search(cr, t):
+                    res = re.search(cr, t).group()
+                    for w in ['extensa', 'acer', 'aspire']:
+                        res = res.replace(w, '')
+                    return res
 
-        return ' '.join(brand_tokens[brand_index + 1:finish_index + 1])
+        if brand == 'asus':
+            regex = [r'\sux...-.....', r'\sux.{3,5}-?.....?']  # There is a problem here TODO @Ahmed
+            for r in regex:
+                cr = re.compile(r)
+                if re.search(cr, t):
+                    return re.search(cr, t).group()
+
+        if brand == 'lenovo':
+            regex = [r'\sx\d{3}\s?tablet?\s?\d{0,4}', r'\sx\d{3}\s?laptop?\s?\d{0,4}', r'\sx\d{3}\s?\d{0,4}',
+                     r'\sx\d{1}\scarbon\s\d{4}', r'\sx\d{1}\scarbon touch\s\d{4}']
+
+            for r in regex:
+                cr = re.compile(r)
+                if re.search(cr, t):
+                    res = re.search(cr, t).group()
+                    for w in ['carbon', 'touch', 'tablet', 'laptop']:
+                        res = res.replace(w, '')
+                    return res
+
+        if brand == 'hp':
+            regex = [r'\sfolio\s?\d{4}.', r'\selitebook\s?-?\d{3,4}.',
+                     r'\s\d{2}-.{4,6}', r'hp\s?\d{4}.', r'\spavilion\s?..\s?.{5}',
+                     r'\s?compaq\s?.{5}', r'\s?hp\s?15\s?[a-z]\d{3}[a-z]{1,2}', r'\shp\s?12\s?.{5}',
+                     r'\s?elitebook\srevolve\s?\d{3}\s?', '\s.\d{3}[pgmwm][pgmwm]?']
+            for r in regex:
+                cr = re.compile(r)
+                if re.search(cr, t):
+                    res = re.search(cr, t).group()
+                    for w in ['folio', 'elitebook', 'hp', 'compaq', 'pavilion', ' 15 ', ' 12 ', 'revolve']:
+                        res = res.replace(w, '')
+                    return res
+
+        if brand == 'dell':
+            regex = [r'\s[nmi]\d{3,4}(-\d{4})?', r'\sinspiron\s15?\s?\d{4}', r'\sinspiron\s17?.?\s?\d{4}',
+                     r'\slatitude\s15?\s?\d{4}']
+            for r in regex:
+                cr = re.compile(r)
+                if re.search(cr, t):
+                    res = re.search(cr, t).group()
+                    for w in ['inspiron', '15', '17r', '   ', '  ', 'latitude']:
+                        res = res.replace(w, '')
+                    return res
+
+        return None
 
     df['model'] = df.apply(assign_laptop_model, axis=1)
     df['ram_capacity'] = df.apply(assign_ram_capacity, axis=1)
@@ -273,65 +324,16 @@ def clean_laptops_dataset(x_org):
 
     df['model_name'] = df.apply(assign_model_name, axis=1)
 
-    def assign_model_number(record):
-        '''
-        TODO
-        if "x230" in org_title and "3435" in org_title:
-                        mod_item["model"] = "3435"
-
-                    if "hp" in org_title:
-                        #regex for specific HP laptops
-                        hp_li = hp_new_model.findall(org_title)
-                        if len(hp_li) > 0:
-                            mod_item["model"] = " ".join(hp_li[0].replace("-","").replace(" ","").split())
-
-                    if "hp" in org_title and "revolve" in org_title and "810" in org_title:
-                        mod_item["model"] = "revolve 810 "
-                        if "g1" in org_title.lower():
-                            mod_item["model"] += "g1"
-                        elif "g2" in org_title.lower():
-                            mod_item["model"] += "g2"
-
-                    if "hp" in org_title and "compaq" in org_title and "nc6400" in org_title:
-                        mod_item["model"] = "nc6400"
-
-                    if "lenovo" in org_title or "thinkpad" in org_title:
-                        tp_li = lenovo_thinkpad_model.findall(org_title)
-                        if len(tp_li) > 0:
-                            mod_item["model"] = " ".join(tp_li[0].split())
-        '''
-        return "232";
-
-    # df['model_number'] = df.apply(assign_model_number)
-
-    def assign_cpu_type(record):
-        # Find the cpu type
-        cpu_list = ["i5", "i3", "i7", "atom",
-                    "pentium", "celeron", "a-series",
-                    "e-series", "aseries", "eseries",
-                    "a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8", "a9"]
-
-        for cpu in cpu_list:
-            if record['cpu_type'] is not None and cpu in record['cpu_type']:
-                return cpu
-            if cpu in record['title']:
-                return cpu
-            if record['cpu_model'] is not None and cpu in record['cpu_model']:
-                return cpu
-            if record['cpu_frequency'] is not None and cpu in record['cpu_frequency']:
-                return cpu
-
-            if re.search("e-[0-9]{3}", record['title']):
-                return re.findall("e-[0-9]{3}", record['title'])[0]
-
-            if record['cpu_model'] is not None and re.search("e-[0-9]{3}", record['cpu_model']):
-                return re.findall("e-[0-9]{3}", record['cpu_model'])[0]
-
-    df['cpu_type'] = df.apply(assign_cpu_type, axis=1)
-
     def assign_cpu_model(record):
         model = record['cpu_model']
-        regex = re.compile(r"-?\d{1,4}([mu])")  # For intel cpus
+        if record['cpu_type'] is not None:
+            if model is not None:
+                model += ' '
+                model += record['cpu_type']
+            else:
+                model = record['cpu_type']
+
+        regex = re.compile(r"-?\d{3,4}([mul]{1,2})")  # For intel cpus
         regex2 = re.compile(r"[ea]\d?-\d{1,4}[m]?")  # for amd A and E series. Needs detection after AMD tag in title
         m = None
         if record['cpu_brand'] == 'intel' and model is not None:
@@ -358,6 +360,35 @@ def clean_laptops_dataset(x_org):
             return None
 
     df['cpu_model'] = df.apply(assign_cpu_model, axis=1)
+
+    def assign_cpu_type(record):
+        # Find the cpu type
+        cpu_list = ["i5", "i3", "i7", "atom",
+                    "pentium", "celeron", "a-series",
+                    "e-series", "aseries", "eseries",
+                    "a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8", "a9"]
+
+        for cpu in cpu_list:
+            if record['cpu_type'] is not None and cpu in str(record['cpu_type']):
+                return cpu
+
+            if record['cpu_model'] is not None and cpu in str(record['cpu_model']):
+                return cpu
+            if record['cpu_frequency'] is not None and cpu in str(record['cpu_frequency']):
+                return cpu
+
+            if cpu in str(record['title']):
+                return cpu
+
+            if re.search("e-[0-9]{3}", record['title']):
+                return re.findall("e-[0-9]{3}", record['title'])[0]
+
+            if record['cpu_model'] is not None and re.search("e-[0-9]{3}", record['cpu_model']):
+                return re.findall("e-[0-9]{3}", record['cpu_model'])[0]
+
+        return None
+
+    df['cpu_type'] = df.apply(assign_cpu_type, axis=1)
 
     def assign_cpu_frequency(record):
         s = record['cpu_frequency']
@@ -389,6 +420,22 @@ def clean_laptops_dataset(x_org):
         # Remove cpu brand
         # Remove cpu type
         # Ram capacity, hdd capacity, ssd capacity
+
+    def assign_cpu(record):
+        cpu_type = record['cpu_type']
+        cpu_model = record['cpu_model']
+
+        res = ""
+        if cpu_type is not None:
+            res += cpu_type
+
+        if cpu_model is not None:
+            res += '-'
+            res += cpu_model
+
+        return res
+
+    df['cpu_model'] = df.apply(assign_cpu, axis=1)
 
     return df
 

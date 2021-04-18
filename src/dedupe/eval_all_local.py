@@ -3,14 +3,16 @@ import time
 import dedupe
 import pandas as pd
 
-from clean_datasets_new import clean_laptops_dataset, clean_products_dataset
+from clean_datasets_2 import clean_laptops_dataset as clean_x2
+from clean_datasets_3 import clean_laptops_dataset as clean_x3
+from clean_datasets_4 import clean_products_dataset as clean_x4
 
 LOCAL = True
 
 partition_threshold = {
     'x2': 0.3,
     'x3': 0.3,
-    'x4': 0.2,
+    'x4': 0.37,
 }
 
 
@@ -20,7 +22,7 @@ partition_threshold = {
 
 def deduper_eval(dataset_type: str, dataset):
     # Create deduper model
-    with open('../../trained_models/deduper/sub_4/trained_{}_settings.json'.format(dataset_type), 'rb') as fin:
+    with open('../../trained_models/deduper/sub_5/trained_{}_settings.json'.format(dataset_type), 'rb') as fin:
         deduper = dedupe.StaticDedupe(fin, num_cores=8)
 
     # Prepare the data
@@ -99,22 +101,19 @@ if __name__ == '__main__':
 
     # Now, we evaluate based on the trained models
     print("Cleaning X2 dataset")
-    # x2 = clean_laptops_dataset(x2)
+    # x2 = clean_x2(x2)
     print("Evaluating X2 dataset")
     # output = output.append(deduper_eval('x2', x2))
 
     print("Cleaning X3 dataset")
-    # x3 = clean_laptops_dataset(x3)
+    # x3 = clean_x3(x3)
     print("Evaluating X3 dataset")
     # output = output.append(deduper_eval('x3', x3))
 
     print("Cleaning X4 dataset")
-    x4 = clean_products_dataset(x4)
+    x4 = clean_x4(x4)
     # Split by brand, size, type
     print("Evaluating X4 dataset")
-    # grouped = x4.groupby(['brand', 'size', 'product_type'])
-    # for g in grouped.groups.keys():
-    #     output = output.append(deduper_eval('x4', x4.loc[grouped.groups[g]]))
     output = output.append(deduper_eval('x4', x4))
 
     output.to_csv('output.csv', index=False)
