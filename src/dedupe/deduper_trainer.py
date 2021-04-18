@@ -4,12 +4,12 @@ import dedupe
 import pandas as pd
 from omegaconf import OmegaConf, DictConfig
 
-from clean_datasets_4 import formatNumber
 from clean_datasets_2 import clean_laptops_dataset as clean_x2
-from clean_datasets_3 import clean_laptops_dataset as clean_x3
+from clean_datasets_3_new import clean_laptops_dataset as clean_x3
 from clean_datasets_4 import clean_products_dataset as clean_x4
+from clean_datasets_4 import formatNumber
 
-
+# TODO remove multispace, remove touch word, add core i5 640m and core i7 640m
 def dedupe_train(params: DictConfig):
     logging.getLogger().setLevel(logging.DEBUG)
 
@@ -28,6 +28,7 @@ def dedupe_train(params: DictConfig):
     else:
         x_dev = clean_x4(x_org)
 
+    x_dev.to_csv('cleaning.csv')
     # Create training data dict compatibale with deduper
     to_dedupe_dict = x_dev.to_dict(orient='index')
 
@@ -38,12 +39,12 @@ def dedupe_train(params: DictConfig):
             # {'field': 'cpu_brand', 'type': 'Exact', 'has missing': True},
             {'field': 'cpu_model', 'type': 'Exact', 'has missing': True},
             # {'field': 'model_name', 'type': 'Exact', 'has missing': True},
-            # {'field': 'cpu_type', 'type': 'Exact', 'has missing': True},
+            {'field': 'cpu_type', 'type': 'Exact', 'has missing': True},
             {'field': 'ram_capacity', 'type': 'Exact', 'has missing': True},
-            # {'field': 'hdd_capacity', 'type': 'Exact', 'has missing': True},
+            {'field': 'hdd_capacity', 'type': 'Exact', 'has missing': True},
             {'field': 'ssd_capacity', 'type': 'Exact', 'has missing': True},
             # {'field': 'new_title', 'type': 'Text', 'has missing': True},
-            # {'field': 'screen_size', 'type': 'Exact', 'has missing': True},
+            {'field': 'screen_size', 'type': 'Exact', 'has missing': True},
             {'field': 'model', 'type': 'Exact', 'has missing': True}
         ]
     elif params.dataset_type == 'laptops_3':
@@ -52,16 +53,19 @@ def dedupe_train(params: DictConfig):
         extra_brands = set(
             pd.read_csv('../../data/sigmod/laptops.csv', encoding='windows-1251').Company.str.lower().unique())
 
-        fields = [{'field': 'brand', 'type': 'Exact', 'has_missing': True},
-                  {'field': 'cpu_brand', 'type': 'Exact', 'has_missing': True},
-                  # {'field' : 'cpu_model', 'type': 'String', 'has_missing' : True},
-                  {'field': 'cpu_type', 'type': 'Exact', 'has_missing': True},
-                  {'field': 'ram_capacity', 'type': 'Exact', 'has_missing': True},
-                  {'field': 'hdd_capacity', 'type': 'Exact', 'has_missing': True},
-                  {'field': 'ssd_capacity', 'type': 'Exact', 'has_missing': True},
-                  {'field': 'title', 'type': 'Text', 'has_missing': True},
-                  {'field': 'screen_size', 'type': 'Categorical', 'has_missing': True, 'categories': screen_sizes},
-                  {'field': 'model', 'type': 'String', 'has_missing': True}]
+        fields = [
+            {'field': 'brand', 'type': 'Exact', 'has missing': True},
+            # {'field': 'cpu_brand', 'type': 'Exact', 'has missing': True},
+            {'field': 'cpu_model', 'type': 'Exact', 'has missing': True},
+            # {'field': 'model_name', 'type': 'Exact', 'has missing': True},
+            {'field': 'cpu_type', 'type': 'Exact', 'has missing': True},
+            {'field': 'ram_capacity', 'type': 'Exact', 'has missing': True},
+            {'field': 'hdd_capacity', 'type': 'Exact', 'has missing': True},
+            {'field': 'ssd_capacity', 'type': 'Exact', 'has missing': True},
+            # {'field': 'new_title', 'type': 'Text', 'has missing': True},
+            {'field': 'screen_size', 'type': 'Exact', 'has missing': True},
+            {'field': 'model', 'type': 'Exact', 'has missing': True}
+        ]
     else:
         fields = [
             {'field': 'name', 'type': 'String', 'has missing': False},

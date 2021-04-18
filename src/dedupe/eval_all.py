@@ -4,7 +4,7 @@ import dedupe
 import pandas as pd
 
 from clean_datasets_2 import clean_laptops_dataset as clean_x2
-from clean_datasets_3 import clean_laptops_dataset as clean_x3
+from clean_datasets_3_new import clean_laptops_dataset as clean_x3
 from clean_datasets_4 import clean_products_dataset as clean_x4
 
 LOCAL = False
