@@ -63,13 +63,12 @@ def clean_laptops_dataset(x_org):
     # Set the index
     df.set_index('instance_id', inplace=True, drop=False)
 
-    spacy.cli.download("en_core_web_sm") #TODO uncomment
     sp = spacy.load('en_core_web_sm')
 
     # Read helper datasets stats
     extra_brands = {'acer', 'google', 'toshiba', 'dell', 'xiaomi', 'asus', 'mediacom', 'hp', 'vero', 'lg',
                     'chuwi', 'lenovo', 'apple', 'microsoft', 'fujitsu', 'huawei', 'samsung', 'razer', 'msi'}
-    #extra_brands = set(
+    # extra_brands = set(
     #    pd.read_csv('../../data/sigmod/laptops.csv', encoding='windows-1251').Company.str.lower().unique())
     screen_sizes = set(pd.read_csv('../../data/sigmod/laptops.csv', encoding='windows-1251').Inches)
     screen_sizes = [str(formatNumber(str(s).lower())) for s in screen_sizes]
@@ -265,7 +264,7 @@ def clean_laptops_dataset(x_org):
                     return res
 
         if brand == 'asus':
-            regex = [r'\sux...-.....', r'\sux.{3,5}-?.....?']  # There is a problem here TODO @Ahmed
+            regex = [r'\sux...-.....', r'\sux.{3,5}-?.....?']  # There is a problem here
             for r in regex:
                 cr = re.compile(r)
                 if re.search(cr, t):
@@ -545,3 +544,6 @@ def clean_products_dataset(x_org):
 
     return x4_dev
 
+
+x2 = pd.read_csv('../../data/sigmod/X3.csv')
+print(x2.brand)
