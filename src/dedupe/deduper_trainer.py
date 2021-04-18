@@ -9,6 +9,7 @@ from clean_datasets_3_new import clean_laptops_dataset as clean_x3
 from clean_datasets_4 import clean_products_dataset as clean_x4
 from clean_datasets_4 import formatNumber
 
+
 # TODO remove multispace, remove touch word, add core i5 640m and core i7 640m
 def dedupe_train(params: DictConfig):
     logging.getLogger().setLevel(logging.DEBUG)
@@ -69,13 +70,9 @@ def dedupe_train(params: DictConfig):
     else:
         fields = [
             {'field': 'name', 'type': 'String', 'has missing': False},
-            {'field': 'brand',
-             'type': 'Categorical', 'categories': list(x_dev.brand.unique()),
-             'has missing': False},
+            {'field': 'brand', 'type': 'Exact', 'has missing': False},
             {'field': 'size', 'type': 'Exact', 'has missing': False},
-            {'field': 'product_type',
-             'type': 'Categorical', 'categories': list(x_dev.product_type.unique()),
-             'has missing': False}]
+            {'field': 'product_type', 'type': 'Exact', 'has missing': False}]
 
     # Create deduper model
     print("Creating dedupe model.")

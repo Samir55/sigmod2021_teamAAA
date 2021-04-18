@@ -63,7 +63,7 @@ def clean_laptops_dataset(x_org):
     # Set the index
     df.set_index('instance_id', inplace=True, drop=False)
 
-    # spacy.cli.download("en_core_web_sm") #TODO uncomment
+    spacy.cli.download("en_core_web_sm") #TODO uncomment
     sp = spacy.load('en_core_web_sm')
 
     # Read helper datasets stats
