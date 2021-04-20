@@ -6,6 +6,7 @@ import pandas as pd
 from clean_datasets_2 import clean_laptops_dataset as clean_x2
 from clean_datasets_3 import clean_laptops_dataset as clean_x3
 from clean_datasets_4 import clean_products_dataset as clean_x4
+#from title_cleaning_test import clean_laptops_dataset as clean_x3
 
 LOCAL = True
 
@@ -106,15 +107,15 @@ if __name__ == '__main__':
     # output = output.append(deduper_eval('x2', x2))
 
     print("Cleaning X3 dataset")
-    # x3 = clean_x3(x3)
+    x3 = clean_x3(x3)
     print("Evaluating X3 dataset")
-    # output = output.append(deduper_eval('x3', x3))
+    output = output.append(deduper_eval('x3', x3))
 
     print("Cleaning X4 dataset")
-    x4 = clean_x4(x4)
+    # x4 = clean_x4(x4)
     # Split by brand, size, type
     print("Evaluating X4 dataset")
-    output = output.append(deduper_eval('x4', x4))
+    # output = output.append(deduper_eval('x4', x4))
 
     output.to_csv('output.csv', index=False)
     print("Total elapsed time: {}".format(time.time() - start_time))

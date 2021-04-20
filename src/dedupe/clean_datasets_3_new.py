@@ -67,8 +67,10 @@ def clean_laptops_dataset(x_org):
     sp = spacy.load('en_core_web_sm')
 
     # Read helper datasets stats
-    extra_brands = set(
-        pd.read_csv('../../data/sigmod/laptops.csv', encoding='windows-1251').Company.str.lower().unique())
+    extra_brands = {'acer', 'google', 'toshiba', 'dell', 'xiaomi', 'asus', 'mediacom', 'hp', 'vero', 'lg',
+                    'chuwi', 'lenovo', 'apple', 'microsoft', 'fujitsu', 'huawei', 'samsung', 'razer', 'msi'}
+    #extra_brands = set(
+    #    pd.read_csv('../../data/sigmod/laptops.csv', encoding='windows-1251').Company.str.lower().unique())
     screen_sizes = set(pd.read_csv('../../data/sigmod/laptops.csv', encoding='windows-1251').Inches)
     screen_sizes = [str(formatNumber(str(s).lower())) for s in screen_sizes]
 
@@ -542,3 +544,4 @@ def clean_products_dataset(x_org):
                                                                                                    ' ')
 
     return x4_dev
+
