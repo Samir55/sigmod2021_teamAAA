@@ -92,22 +92,18 @@ def clean_laptops_dataset(x_org):
     def tokenize_new_tile(record):
         return [w.text for w in sp(record['new_title'])]
 
-    remove_words = ['with', 'clarinet', 'audiophile', 'end', 'pc', 'french', 'performance', '"', 'burner', 'sd',
-                    'canada', 'certified',
-                    'keyboard', 'backlight', 'professional', 'at', 'beats', 'drive', 'microphone', 'vology',
-                    'america',
-                    'refurbished', 'computer', 'dimm', 'ultrabase', 'audio', ':', 'switching', 'premium', 'special',
-                    'dvd', 'portable',
-                    'speaker', 'buy.net', 'downgrade', '/', '&', 'wireless', 'home', 'notebook', ')', 'edition',
-                    'built-in',
-                    'dualcore', 'high', 'revolve', 'cool', 'and', 'micro', 'aluminum', 'tigerdirect', 'voice',
-                    'nx.m8eaa.007',
-                    'comfyview', 'amazon.com', 'bes', 'ultraportable', 'gb', 'core', 'computers', 'screen', 'slot',
-                    'lan', 'supermulti', 'technology', 'bluray', 'price', 'display', 'dvdrw', '.com',
-                    'internationalaccessories',
-                    'touch', 'card', 'us', 'bluetooth', 'dvdwriter', 'for', 'new', 'comparison', 'webcam', '(',
-                    'accessories', 'brand', 'builtin', 'dvd', 'batt', 'walmart.com', 'ebay', 'gaming', 'windows',
-                    'laptop', 'sealed', 'wifi', 'best', 'topendelectronics', 'cd'] #, 'g']
+    remove_words = {'"', '&', '(', ')', '.com', '/', ':', 'accessories', 'aluminum', 'amazon.com', 'america',
+                    'and', 'at', 'audio', 'audiophile', 'backlight', 'batt', 'beats', 'bes', 'best', 'bluetooth',
+                    'bluray', 'brand', 'built-in', 'builtin', 'burner', 'buy.net', 'canada', 'card', 'cd',
+                    'certified', 'clarinet', 'comfyview', 'comparison', 'computer', 'computers', 'cool', 'core',
+                    'deals', 'dimm', 'display', 'downgrade', 'drive', 'dualcore', 'dvd', 'dvdrw', 'dvdwriter',
+                    'ebay', 'edition', 'end', 'finger', 'for', 'french', 'gaming', 'graphics', 'high', 'home',
+                    'internationalaccessories', 'keyboard', 'lan', 'laptop', 'micro', 'microphone', 'mini.ca',
+                    'new', 'notebook', 'nx.m8eaa.007', 'overstock.com', 'pc', 'performance', 'portable', 'premium',
+                    'price', 'professional', 'refurbished', 'revolve', 'sale', 'screen', 'sd', 'sealed', 'slot',
+                    'speaker', 'special', 'supermulti', 'switching', 'technology', 'thenerds.net', 'tigerdirect',
+                    'topendelectronics', 'touch', 'ultrabase', 'ultraportable', 'us', 'voice', 'vology', 'walmart',
+                    'walmart.com', 'webcam', 'wifi', 'win', 'windows', 'wireless', 'with'}  #, 'g']
     replace_words = {'hewlett-packard': 'hp'}
 
     def clean_title(record):
