@@ -176,91 +176,6 @@ def clean_laptops_dataset(x_org):
 
     df['screen_size'] = df.apply(assign_screen_size, axis=1)
 
-    # ram capacity
-    def assign_ram_capacity(record):
-        s = str(record['ram_capacity'])
-        t = str(record['title'])
-        regex = re.compile(r'(\d{1,3})\s?([gm]b)')  # rare chance of encountering MB as a typo
-        m = None
-        # ram_c = df['ram_capacity'].str.extract(regex)
-        # title_ram = df['title'].str.extract(regex)
-        if s:
-            m = re.search(regex, s)
-        if m is None:
-            m = re.search(r"\d{1,3}\s?([gm]b)\s?(ram)|(ddr\s?3)", t)
-
-        if m is None:
-            return None
-        else:
-            m = m.group()
-            m = re.sub(r'([gm]b)', "gb", m)
-            return re.sub(r'(ram)|(ddr\s?3)', "", m)
-
-    def assign_hdd_capacity(record):
-        s = str(record['hdd_capacity']).replace(' ', '')
-        s2 = str(record['title'].replace(' ', ''))
-
-        if 'ssd' in s:
-            return 0
-
-        if re.search("\d{3,4}gb", s):
-            return str(re.findall("\d{3,4}gb", s)[0][:-2]) + ' gb'
-        if re.search("\dtb", s):
-            return str(re.findall("\dtb", s)[0][:-2] + '000') + ' gb'
-        if re.search("\d{3,4}gbhdd", s2):
-            return str(re.findall("\d{3,4}gbhdd", s2)[0][:-5]) + ' gb'
-        if re.search("hdd\d{3,4}gb", s2):
-            return str(re.findall("hdd\d{3,4}gb", s2)[0][3:-2]) + ' gb'
-        if re.search("hdd\dtb", s2):
-            return str(re.findall("hdd\dtb", s2)[0][3:4] + '000') + ' gb'
-        if re.search("\dtbhdd", s2):
-            return str(re.findall("\dtbhdd", s2)[0][0] + '000') + ' gb'
-        return None
-
-    df['hdd_capacity'] = df.apply(assign_hdd_capacity, axis=1)
-
-    # def assign_ssd_capacity(record):
-    #     s = str(record['ssd_capacity']).replace(' ', '')
-    #     s2 = str(record['title'].replace(' ', ''))
-    #
-    #     if re.search("\d{3,4}gbssd", s):
-    #         return str(re.findall("\d{3,4}gb", s)[0][:-2]) + ' gb'
-    #     if re.search("\dtbssd", s):
-    #         return str(re.findall("\dtb", s)[0][:-2] + '000') + ' gb'
-    #     if re.search("\d{3,4}gbssd", s2):
-    #         return str(re.findall("\d{3,4}gbssd", s2)[0][:-5]) + ' gb'
-    #     if re.search("ssd\d{3,4}gb", s2):
-    #         return str(re.findall("ssd\d{3,4}gb", s2)[0][3:-2]) + ' gb'
-    #     if re.search("ssd\d{1}tb", s2):
-    #         return str(re.findall("ssd\d{1}tb", s2)[0][3:4] + '000') + ' gb'
-    #     if re.search("\d{1}tbssd", s2):
-    #         return str(re.findall("\d{1}tbssd", s2)[0][0] + '000') + ' gb'
-    #     return None
-
-    '''
-    Possible implementation for HDD and SSD:
-        if ssd is found in title, hdd capacity, ssd capacity, then SSD code
-        else if hdd is found in title, hdd capacity, ssd capacity, then HDD code
-
-    '''
-    def assign_ssd_capacity(record): #picks up a bit more SSDs for some reason
-        ssd = str(record['ssd_capacity']).replace(' ', '')
-        ssd2 = str(record['title']).replace(' ', '')
-        hdd = str(record['hdd_capacity']).replace(' ', '')
-        hdd2 = str(record['title']).replace(' ', '')
-
-        if re.search(r"(ssd)?\d{2,4}gb(ssd)?", ssd):
-            return str(re.findall("\d{2,4}g", ssd)[0][:-1]) + ' gb'
-        if re.search(r"(ssd)?\d{2,4}gbssd", ssd2):
-            return str(re.findall("\d{2,4}gbssd", ssd2)[0][:-5]) + ' gb'
-        if re.search(r"(ssd)?\dtb(ssd)?", ssd):
-            return str(re.findall("\dt", ssd)[0][1]) + '000 gb'
-        if re.search(r"(ssd)?\dtb(ssd)?", ssd2):
-            return str(re.findall("\dtb", ssd2)[0][1]) + '000 gb'
-
-
-    df['ssd_capacity'] = df.apply(assign_ssd_capacity, axis=1)
-
     def assign_laptop_model(record):
         brand = record['brand']
         t = record['new_title']
@@ -323,6 +238,75 @@ def clean_laptops_dataset(x_org):
         return None
 
     df['model'] = df.apply(assign_laptop_model, axis=1)
+
+    '''
+    Possible implementation for HDD and SSD:
+        if ssd is found in title, hdd capacity, ssd capacity, then SSD code
+        else if hdd is found in title, hdd capacity, ssd capacity, then HDD code
+
+    '''
+
+    def assign_ssd_capacity(record):  # picks up a bit more SSDs for some reason
+        ssd = str(record['ssd_capacity']).replace(' ', '')
+        ssd2 = str(record['title']).replace(' ', '')
+        hdd = str(record['hdd_capacity']).replace(' ', '')
+        hdd2 = str(record['title']).replace(' ', '')
+
+        if re.search(r"(ssd)?\d{2,4}gb(ssd)?", ssd):
+            return str(re.findall("\d{2,4}g", ssd)[0][:-1]) + ' gb'
+        if re.search(r"(ssd)?\d{2,4}gbssd", ssd2):
+            return str(re.findall("\d{2,4}gbssd", ssd2)[0][:-5]) + ' gb'
+        if re.search(r"(ssd)?\dtb(ssd)?", ssd):
+            return str(re.findall("\dt", ssd)[0][1]) + '000 gb'
+        if re.search(r"(ssd)?\dtb(ssd)?", ssd2):
+            return str(re.findall("\dtb", ssd2)[0][1]) + '000 gb'
+        if re.search(r"(\d{2,4}\s?gb\s?ssd)", hdd):
+            return str(re.findall("\d{2,4}\s?gb", hdd)[0][:-2]) + ' gb'
+        return None
+
+    df['ssd_capacity'] = df.apply(assign_ssd_capacity, axis=1)
+
+    def assign_hdd_capacity(record):
+        s = str(record['hdd_capacity']).replace(' ', '')
+        s2 = str(record['title'].replace(' ', ''))
+
+        if 'ssd' in s:
+            return None
+        if record['ssd_capacity']:
+            return None
+
+        if re.search("\d{3}gb", s):
+            return str(re.findall("\d{3}gb", s)[0][:-2]) + ' gb'
+        if re.search("\dtb", s):
+            return str(re.findall("\dtb", s)[0][:-2] + '000') + ' gb'
+        if re.search("\d{3}gb\s?(hdd)?", s2):
+            return str(re.findall("\d{3}gb", s2)[0][:-2]) + ' gb'
+        if re.search("hdd\dtb\s?(hdd)?", s2):
+            return str(re.findall("hdd\dtb", s2)[0][3:4] + '000') + ' gb'
+        return None
+
+    df['hdd_capacity'] = df.apply(assign_hdd_capacity, axis=1)
+
+    # ram capacity
+    def assign_ram_capacity(record):
+        s = str(record['ram_capacity'])
+        t = str(record['title'])
+        regex = re.compile(r'(\d{1,3})\s?([gm]b)')  # rare chance of encountering MB as a typo
+        m = None
+        # ram_c = df['ram_capacity'].str.extract(regex)
+        # title_ram = df['title'].str.extract(regex)
+        if s:
+            m = re.search(regex, s)
+        if m is None:
+            m = re.search(r"\d{1,3}\s?([gm]b)\s?((ram)|(ddr\s?3)?)", t)  # r"\d{1,3}\s?([gm]b)\s?(ram)|(ddr\s?3)"
+
+        if m is None:
+            return None
+        else:
+            m = m.group()
+            m = re.sub(r'([gm]b)', "gb", m)
+            return re.sub(r'(ram)|(ddr\s?3)', "", m)
+
     df['ram_capacity'] = df.apply(assign_ram_capacity, axis=1)
 
     df = fill_nulls_with_none(df)
