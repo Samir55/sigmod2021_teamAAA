@@ -69,7 +69,7 @@ def dedupe_train(params: DictConfig):
         ]
     else:
         fields = [
-            {'field': 'name', 'type': 'String', 'has missing': False},
+            {'field': 'name', 'type': 'Text', 'has missing': False},
             {'field': 'brand', 'type': 'Exact', 'has missing': False},
             {'field': 'size', 'type': 'Exact', 'has missing': False},
             {'field': 'product_type', 'type': 'Exact', 'has missing': False}]
