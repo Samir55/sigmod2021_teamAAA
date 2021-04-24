@@ -38,15 +38,15 @@ def dedupe_train(params: DictConfig):
         fields = [
             # {'field': 'brand', 'type': 'Exact', 'has missing': True},
             # {'field': 'cpu_brand', 'type': 'Exact', 'has missing': True},
-            {'field': 'cpu_model', 'type': 'Exact', 'has missing': True},
+            {'field': 'cpu_model', 'type': 'Text', 'has missing': True},
             # {'field': 'model_name', 'type': 'Exact', 'has missing': True},
             {'field': 'cpu_type', 'type': 'Exact', 'has missing': True},
             {'field': 'ram_capacity', 'type': 'Exact', 'has missing': True},
-            {'field': 'hdd_capacity', 'type': 'Exact', 'has missing': True},
-            {'field': 'ssd_capacity', 'type': 'Exact', 'has missing': True},
-            # {'field': 'new_title', 'type': 'Text', 'has missing': True},
-            {'field': 'screen_size', 'type': 'Exact', 'has missing': True},
-            {'field': 'model', 'type': 'Exact', 'has missing': True}
+            # {'field': 'hdd_capacity', 'type': 'Exact', 'has missing': True},
+            # {'field': 'ssd_capacity', 'type': 'Exact', 'has missing': True},
+            {'field': 'new_title', 'type': 'Text', 'has missing': True},
+            # {'field': 'screen_size', 'type': 'Exact', 'has missing': True},
+            {'field': 'model', 'type': 'Text', 'has missing': True}
         ]
     elif params.dataset_type == 'laptops_3':
         screen_sizes = set(pd.read_csv('../../data/sigmod/laptops.csv', encoding='windows-1251').Inches)
@@ -57,7 +57,7 @@ def dedupe_train(params: DictConfig):
         fields = [
             {'field': 'brand', 'type': 'Exact', 'has missing': True},
             # {'field': 'cpu_brand', 'type': 'Exact', 'has missing': True},
-            {'field': 'cpu_model', 'type': 'Exact', 'has missing': True},
+            {'field': 'cpu_model', 'type': 'Text', 'has missing': True},
             # {'field': 'model_name', 'type': 'Exact', 'has missing': True},
             {'field': 'cpu_type', 'type': 'Exact', 'has missing': True},
             {'field': 'ram_capacity', 'type': 'Exact', 'has missing': True},
@@ -65,7 +65,7 @@ def dedupe_train(params: DictConfig):
             {'field': 'ssd_capacity', 'type': 'Exact', 'has missing': True},
             # {'field': 'new_title', 'type': 'Text', 'has missing': True},
             {'field': 'screen_size', 'type': 'Exact', 'has missing': True},
-            {'field': 'model', 'type': 'Exact', 'has missing': True}
+            {'field': 'model', 'type': 'Text', 'has missing': True}
         ]
     else:
         fields = [
