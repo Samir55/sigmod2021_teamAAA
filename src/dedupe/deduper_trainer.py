@@ -63,7 +63,7 @@ def dedupe_train(params: DictConfig):
             {'field': 'ram_capacity', 'type': 'Exact', 'has missing': True},
             # {'field': 'hdd_capacity', 'type': 'Exact', 'has missing': True},
             # {'field': 'ssd_capacity', 'type': 'Exact', 'has missing': True},
-            # {'field': 'new_title', 'type': 'Text', 'has missing': True},
+            {'field': 'new_title', 'type': 'Text', 'has missing': True},
             # {'field': 'screen_size', 'type': 'Exact', 'has missing': True},
             {'field': 'model', 'type': 'Text', 'has missing': True}
         ]
