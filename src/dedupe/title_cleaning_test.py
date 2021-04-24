@@ -298,14 +298,21 @@ def clean_laptops_dataset(x_org):
         if s:
             m = re.search(regex, s)
         if m is None:
-            m = re.search(r"\d{1,3}\s?([gm]b)\s?((ram)|(ddr\s?3)?)", t)  # r"\d{1,3}\s?([gm]b)\s?(ram)|(ddr\s?3)"
+            # m = re.search(r'(\d{4})', s)
+            if re.search("\d{4}", s):
+                return str(re.findall("\d{4}", s)[0][:-3]) + ' gb'
+        if m is None:
+            m = re.search(r"\d{1,3}\s?([gm]b)\s?((ram)|(ddr\s?3)?)", t) #r"\d{1,3}\s?([gm]b)\s?(ram)|(ddr\s?3)"
 
         if m is None:
             return None
         else:
             m = m.group()
-            m = re.sub(r'([gm]b)', "gb", m)
-            return re.sub(r'(ram)|(ddr\s?3)', "", m)
+            m = re.sub(r'\s?([gm]b)', " gb", m)
+            m = re.sub(r'(ram)|(ddr\s?3)', "", m)
+            # if m == record['hdd_capacity'] or record['ssd_capacity']: #Picks up HDD for RAM. Fix doesn't work
+            #     return None
+            return m
 
     df['ram_capacity'] = df.apply(assign_ram_capacity, axis=1)
 
