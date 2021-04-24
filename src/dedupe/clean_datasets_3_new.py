@@ -63,16 +63,18 @@ def clean_laptops_dataset(x_org):
     # Set the index
     df.set_index('instance_id', inplace=True, drop=False)
 
-    spacy.cli.download("en_core_web_sm") #TODO uncomment
+    spacy.cli.download("en_core_web_sm")  # TODO uncomment
     sp = spacy.load('en_core_web_sm')
 
     # Read helper datasets stats
     extra_brands = {'acer', 'google', 'toshiba', 'dell', 'xiaomi', 'asus', 'mediacom', 'hp', 'vero', 'lg',
                     'chuwi', 'lenovo', 'apple', 'microsoft', 'fujitsu', 'huawei', 'samsung', 'razer', 'msi'}
-    #extra_brands = set(
+    screen_sizes = {'14.1', '15.6', '12.5', '12', '15', '13.5', '14', '17', '17.3',
+                    '12.3', '13.9', '15.4', '10.1', '13', '11.6', '18.4', '13.3', '11.3'}
+    # extra_brands = set(
     #    pd.read_csv('../../data/sigmod/laptops.csv', encoding='windows-1251').Company.str.lower().unique())
-    screen_sizes = set(pd.read_csv('../../data/sigmod/laptops.csv', encoding='windows-1251').Inches)
-    screen_sizes = [str(formatNumber(str(s).lower())) for s in screen_sizes]
+    # screen_sizes = set(pd.read_csv('../../data/sigmod/laptops.csv', encoding='windows-1251').Inches)
+    # screen_sizes = [str(formatNumber(str(s).lower())) for s in screen_sizes]
 
     # Keep only Alpha numeric
     irrelevant_regex = re.compile(r'[^a-z0-9,.\-\s]')
@@ -97,14 +99,16 @@ def clean_laptops_dataset(x_org):
                     'dvd', 'portable',
                     'speaker', 'buy.net', 'downgrade', '/', '&', 'wireless', 'home', 'notebook', ')', 'edition',
                     'built-in',
-                    'dualcore', 'high', 'revolve', 'cool', 'and', 'micro', 'aluminum', 'g', 'tigerdirect', 'voice',
+                    'dualcore', 'high', 'revolve', 'cool', 'and', 'micro', 'aluminum', 'tigerdirect', 'voice',
                     'nx.m8eaa.007',
                     'comfyview', 'amazon.com', 'bes', 'ultraportable', 'gb', 'core', 'computers', 'screen', 'slot',
                     'lan', 'supermulti', 'technology', 'bluray', 'price', 'display', 'dvdrw', '.com',
                     'internationalaccessories',
                     'touch', 'card', 'us', 'bluetooth', 'dvdwriter', 'for', 'new', 'comparison', 'webcam', '(',
                     'laptop',
-                    'accessories', 'brand', 'builtin', 'dvd', 'batt', 'walmart.com', 'ebay']
+                    'accessories', 'brand', 'builtin', 'dvd', 'batt', 'walmart.com', 'ebay', 'gaming', 'windows',
+                    'laptop', 'sealed', 'wifi', 'best', 'topendelectronics', 'cd', 'win']  # , 'g']
+
     replace_words = {'hewlett-packard': 'hp'}
 
     def clean_title(record):
@@ -544,4 +548,3 @@ def clean_products_dataset(x_org):
                                                                                                    ' ')
 
     return x4_dev
-
