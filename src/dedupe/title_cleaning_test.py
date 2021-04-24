@@ -89,7 +89,7 @@ def clean_laptops_dataset(x_org):
         df[column] = df[column].str.lower().str.replace(irrelevant_regex, ' ').str.replace(multispace_regex, ' ')
 
     # Tokenize the new title
-    def tokenize_new_tile(record):
+    def tokenize_new_title(record):
         return [w.text for w in sp(record['new_title'])]
 
     remove_words = {'"', '&', '(', ')', '.com', '/', ':', 'accessories', 'aluminum', 'amazon.com', 'america',
@@ -125,7 +125,7 @@ def clean_laptops_dataset(x_org):
     df['new_title'] = df.new_title.str.lower().str.replace(irrelevant_regex, '').str.replace(multispace_regex,
                                                                                              ' ').str.replace(
         multispace_regex_2, ' ')
-    df['new_title_tokens'] = df.apply(tokenize_new_tile, axis=1)
+    df['new_title_tokens'] = df.apply(tokenize_new_title, axis=1)
 
     # Brand assignment
     all_brands = set(extra_brands)
@@ -241,17 +241,17 @@ def clean_laptops_dataset(x_org):
         else if hdd is found in title, hdd capacity, ssd capacity, then HDD code
 
     '''
-
-    def assign_ssd_capacity(record):  # picks up a bit more SSDs for some reason
+    def assign_ssd_capacity(record): #picks up a bit more SSDs for some reason
         ssd = str(record['ssd_capacity']).replace(' ', '')
         ssd2 = str(record['title']).replace(' ', '')
         hdd = str(record['hdd_capacity']).replace(' ', '')
-        hdd2 = str(record['title']).replace(' ', '')
 
         if re.search(r"(ssd)?\d{2,4}gb(ssd)?", ssd):
             return str(re.findall("\d{2,4}g", ssd)[0][:-1]) + ' gb'
         if re.search(r"(ssd)?\d{2,4}gbssd", ssd2):
-            return str(re.findall("\d{2,4}gbssd", ssd2)[0][:-5]) + ' gb'
+            v = str(re.findall("\d{2,4}gbssd", ssd2)[0][:-5])
+
+            return  v + ' gb'
         if re.search(r"(ssd)?\dtb(ssd)?", ssd):
             return str(re.findall("\dt", ssd)[0][1]) + '000 gb'
         if re.search(r"(ssd)?\dtb(ssd)?", ssd2):
@@ -261,6 +261,12 @@ def clean_laptops_dataset(x_org):
         return None
 
     df['ssd_capacity'] = df.apply(assign_ssd_capacity, axis=1)
+    # df['new_title'] = df.apply( active_cleaning, axis=1, args=re.compile(r"\d{2,4}gbssd"))
+    # def ssd_cleaning(record):
+    #     regex = re.compile(r'\d{2,4}gbssd')
+    #     return re.sub(regex, "", record['new_title'])
+    #
+    # df['new_title'] = df.apply(ssd_cleaning, axis=1)
 
     def assign_hdd_capacity(record):
         s = str(record['hdd_capacity']).replace(' ', '')
@@ -271,7 +277,7 @@ def clean_laptops_dataset(x_org):
         if record['ssd_capacity']:
             return None
 
-        if re.search("\d{3}gb", s):
+        if re.search("\d{3}gb", s): #Possible bug with spaces but it works for now without \s?
             return str(re.findall("\d{3}gb", s)[0][:-2]) + ' gb'
         if re.search("\dtb", s):
             return str(re.findall("\dtb", s)[0][:-2] + '000') + ' gb'
@@ -282,23 +288,25 @@ def clean_laptops_dataset(x_org):
         return None
 
     df['hdd_capacity'] = df.apply(assign_hdd_capacity, axis=1)
-
     # ram capacity
     def assign_ram_capacity(record):
-        s = str(record['ram_capacity'])
-        t = str(record['title'])
-        regex = re.compile(r'(\d{1,3})\s?([gm]b)')  # rare chance of encountering MB as a typo
+        cap = str(record['ram_capacity'])
+        title = str(record['title'])
+        rType = str(record['ram_type'])
+        regex = re.compile(r'(\d{1,2})\s?([gm]b)')  # rare chance of encountering MB as a typo
         m = None
         # ram_c = df['ram_capacity'].str.extract(regex)
         # title_ram = df['title'].str.extract(regex)
-        if s:
-            m = re.search(regex, s)
+        if cap:
+            m = re.search(regex, cap)
+        if m is None:
+            m = re.search(regex, rType)
         if m is None:
             # m = re.search(r'(\d{4})', s)
-            if re.search("\d{4}", s):
-                return str(re.findall("\d{4}", s)[0][:-3]) + ' gb'
+            if re.search("\d{4}", cap):
+                return str(re.findall("\d{4}", cap)[0][:-3]) + ' gb'
         if m is None:
-            m = re.search(r"\d{1,3}\s?([gm]b)\s?((ram)|(ddr\s?3)?)", t) #r"\d{1,3}\s?([gm]b)\s?(ram)|(ddr\s?3)"
+            m = re.search(r"\d{1,3}\s?([gm]b)\s?((ram)|(ddr\s?3)?)", title) #r"\d{1,3}\s?([gm]b)\s?(ram)|(ddr\s?3)"
 
         if m is None:
             return None
@@ -306,8 +314,8 @@ def clean_laptops_dataset(x_org):
             m = m.group()
             m = re.sub(r'\s?([gm]b)', " gb", m)
             m = re.sub(r'(ram)|(ddr\s?3)', "", m)
-            # if m == record['hdd_capacity'] or record['ssd_capacity']: #Picks up HDD for RAM. Fix doesn't work
-            #     return None
+            if m == (record['hdd_capacity'] or record['ssd_capacity']): #Picks up HDD for RAM. Fix doesn't work
+                return None
             return m
 
     df['ram_capacity'] = df.apply(assign_ram_capacity, axis=1)
@@ -336,13 +344,16 @@ def clean_laptops_dataset(x_org):
                 model = record['cpu_type']
 
         regex = re.compile(r"-?\d{3,4}([mul]{1,2})")  # For intel cpus
-        regex2 = re.compile(r"[ea]\d?-\d{1,4}[m]?")  # for amd A and E series. Needs detection after AMD tag in title
+        regex2 = re.compile(r"[ea]\d?-\d{1,4}[m]?")  # for amd A & E series. Needs detection after AMD tag in title
         m = None
         if record['cpu_brand'] == 'intel' and model is not None:
             m = re.search(regex, model)
             if m is not None:
                 m = m.group()
                 return re.sub(r'-', "", m)
+            m = re.search(r"m\d{3,4}", model) #TODO Used to pick up i7-M640. Double check
+            if m is not None:
+                return m.group()
         if re.search("intel", record['title']):  # one case where laptop model is 50m and gets caught
             m = re.search(regex, record['title'])
             if m is not None:
@@ -469,7 +480,7 @@ def clean_laptops_dataset(x_org):
         # Remove cpu brand
         # Remove cpu type
         # Ram capacity, hdd capacity, ssd capacity
-    df['new_title'] = df.apply(assign_new_title, axis=1)
+    # df['new_title'] = df.apply(assign_new_title, axis=1)
 
     return df
 
