@@ -314,7 +314,7 @@ def clean_laptops_dataset(x_org):
             m = m.group()
             m = re.sub(r'\s?([gm]b)', " gb", m)
             m = re.sub(r'(ram)|(ddr\s?3)', "", m)
-            if m == (record['hdd_capacity'] or record['ssd_capacity']): #Picks up HDD for RAM. Fix doesn't work
+            if m == (record['hdd_capacity'] or record['ssd_capacity']): #TODO Picks up HDD for RAM. Fix doesn't work
                 return None
             return m
 
