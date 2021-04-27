@@ -259,7 +259,7 @@ def clean_laptops_dataset(x_org):
             return None
         else:
             m = m.group()
-            m = re.sub(r'\s?([gm]b)', " gb", m)
+            m = re.sub(r'\s?([gm]b)', "", m)
             # m = re.sub(r'(ram)|(ddr\s?3)', "", m)
             if m in [record['hdd_capacity'], record['ssd_capacity']]:  # Picks up HDD for RAM. Fix doesn't work
                 # print("Broke")
