@@ -251,7 +251,7 @@ def clean_laptops_dataset(x_org):
         t = record['new_title']
 
         if brand == 'acer':
-            acer_regex = [r'\sv.-.....-', r'\se.-.....-?....?']
+            acer_regex = [r'\sv.-.....-?....?', r'\se.-.....-?....?']
             for r in acer_regex:
                 cr = re.compile(r)
                 if re.search(cr, t):

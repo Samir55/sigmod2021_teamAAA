@@ -103,6 +103,8 @@ def dedupe_train(params: DictConfig):
     print("Training the model.")
     deduper.train(recall=params.recall, index_predicates=params.index_predicates)
 
+    # deduper.active_learner()
+
     # Save the trained model
     print("Saving the model.")
     with open(params.save_model_path, 'w') as tf:
