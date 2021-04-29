@@ -134,7 +134,7 @@ def eval_lightgbm_dedupe(dataset_type: str, dataset_rf, dataset_dedupe):
     res = []
     for i in range(len(preds)):
         record = preds.iloc[i]
-        res.append((record.instance_id_1, record.instance_id_2))
+        res.append(record.name)
 
     res_df = pd.DataFrame(res)
     res_df.columns = ['left_instance_id', 'right_instance_id']

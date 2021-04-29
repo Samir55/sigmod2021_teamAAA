@@ -126,7 +126,7 @@ def eval_lightgbm_dedupe(dataset_type: str, dataset_rf, dataset_dedupe):
                     features.loc[r_k, 'xy_same_entity'] = p
 
     # Now load the lightgbm
-    bst = lgb.Booster(model_file='x4_lgb_classifier.txt')
+    bst = lgb.Booster(model_file='../../trained_models/combined/x4_lgb_classifier.txt')
 
     labels = bst.predict(features)
     features['labels'] = labels
@@ -138,7 +138,7 @@ def eval_lightgbm_dedupe(dataset_type: str, dataset_rf, dataset_dedupe):
     res = []
     for i in range(len(preds)):
         record = preds.iloc[i]
-        res.append((record.instance_id_1, record.instance_id_2))
+        res.append(record.name)
 
     res_df = pd.DataFrame(res)
     res_df.columns = ['left_instance_id', 'right_instance_id']
@@ -185,16 +185,17 @@ if __name__ == '__main__':
 
     # Now, we evaluate based on the trained models
     print("Cleaning X2 dataset")
-    x2 = clean_x2(x2)
+    # x2 = clean_x2(x2)
     print("Evaluating X2 dataset")
-    output = output.append(deduper_eval('x2', x2))
+    # output = output.append(deduper_eval('x2', x2))
 
     print("Cleaning X3 dataset")
-    x3 = clean_x3(x3)
+    # x3 = clean_x3(x3)
     print("Evaluating X3 dataset")
-    output = output.append(deduper_eval('x3', x3))
+    # output = output.append(deduper_eval('x3', x3))
 
     print("Cleaning X4 dataset")
+    x4 = x4.sample(100)
     x4_rf = clean_x4_rf(x4)
     x4_dedupe = clean_x4_dedupe(x4)
 
