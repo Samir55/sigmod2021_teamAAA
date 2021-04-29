@@ -517,4 +517,8 @@ if __name__ == '__main__':
 
     bst = lgb.train(params, d_train, ROUNDS, feval=lgb_f1_score, evals_result=evals_result)
 
+    print("Training F1 score")
     print(lgb_f1_score(bst.predict(df_train), d_train))  # Non dedupe
+
+    # Save the lightgbm model
+    bst.save_model('x4_lgb_classifier.txt', num_iteration=bst.best_iteration)
