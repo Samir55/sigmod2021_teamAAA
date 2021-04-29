@@ -122,7 +122,7 @@ def eval_lightgbm_dedupe(dataset_type: str, dataset_rf, dataset_dedupe):
                     features.loc[r_k, 'xy_same_entity'] = p
 
     # Now load the lightgbm
-    bst = lgb.Booster(model_file='x4_lgb_classifier.txt')
+    bst = lgb.Booster(model_file='../../trained_models/combined/x4_lgb_classifier.txt')
 
     labels = bst.predict(features)
     features['labels'] = labels
