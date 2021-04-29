@@ -1,3 +1,4 @@
+
 import pandas as pd
 import os
 import csv
@@ -13,14 +14,14 @@ import json
 from unidecode import unidecode
 
 
-def formatNumber(num):
+sp = spacy.load('en_core_web_sm')
+
+def format_number(num):
     num = float(num)
     if num % 1 == 0:
         return int(num)
     else:
         return num
-
-
 def fill_nulls_with_none(df):
     """ Fills nulls in a dataframe with None.
         This is required for the Dedupe package to work properly.
@@ -34,7 +35,6 @@ def fill_nulls_with_none(df):
         new_df[col] = new_df[col].where(new_df[col].notnull(), None)
     return new_df
 
-
 def convert_numbers_to_strings(df, cols_to_convert, remove_point_zero=True):
     """ Convert number types to strings in a dataframe.
         This is convoluted as need to keep NoneTypes as NoneTypes for what comes next!
@@ -43,17 +43,22 @@ def convert_numbers_to_strings(df, cols_to_convert, remove_point_zero=True):
                 - cols_to_convert -> list of columns to convert
                 - remove_point_zero -> bool to say whether you want '.0' removed from number
 
-        Ouputs: - dataframe with converted number types
+        Outputs: - dataframe with converted number types
     """
     new_df = df.copy()
     for col in cols_to_convert:
         if remove_point_zero:
-            new_df[col] = new_df[col].apply(lambda x: str(x).replace('.0', '') \
-                if not isinstance(x, type(None)) else x)
+            new_df[col] = new_df[col].apply(lambda x: str(x).replace('.0','')\
+                                            if not isinstance(x, type(None)) else x)
         else:
-            new_df[col] = new_df[col].apply(lambda x: str(x) \
-                if not isinstance(x, type(None)) else x)
+            new_df[col] = new_df[col].apply(lambda x: str(x)\
+                                            if not isinstance(x, type(None)) else x)
     return new_df
+
+extra_brands = {'acer', 'google', 'toshiba', 'dell', 'xiaomi', 'asus', 'mediacom', 'hp', 'vero', 'lg',
+                    'chuwi', 'lenovo', 'apple', 'microsoft', 'fujitsu', 'huawei', 'samsung', 'razer', 'msi'}
+screen_sizes = {'11.3', '14.1', '10.1', '12', '11.6', '13.3', '14', '15.4', '15.6', '17.3', '13.5',
+                '12.5', '13', '18.4', '13.9', '17', '15', '12.3'}
 
 
 def clean_laptops_dataset(x_org):
@@ -62,8 +67,6 @@ def clean_laptops_dataset(x_org):
 
     # Set the index
     df.set_index('instance_id', inplace=True, drop=False)
-
-    spacy.cli.download("en_core_web_sm")  # TODO uncomment
     sp = spacy.load('en_core_web_sm')
 
     # Read helper datasets stats
@@ -71,15 +74,10 @@ def clean_laptops_dataset(x_org):
                     'chuwi', 'lenovo', 'apple', 'microsoft', 'fujitsu', 'huawei', 'samsung', 'razer', 'msi'}
     screen_sizes = {'14.1', '15.6', '12.5', '12', '15', '13.5', '14', '17', '17.3',
                     '12.3', '13.9', '15.4', '10.1', '13', '11.6', '18.4', '13.3', '11.3'}
-    # extra_brands = set(
-    #    pd.read_csv('../../data/sigmod/laptops.csv', encoding='windows-1251').Company.str.lower().unique())
-    # screen_sizes = set(pd.read_csv('../../data/sigmod/laptops.csv', encoding='windows-1251').Inches)
-    # screen_sizes = [str(formatNumber(str(s).lower())) for s in screen_sizes]
 
     # Keep only Alpha numeric
     irrelevant_regex = re.compile(r'[^a-z0-9,.\-\s]')
     multispace_regex = re.compile(r'\s\s+')  # Why it doesn't work
-    multispace_regex_2 = re.compile(r'\s-\s')  # Why it doesn't work
     df.replace({r'[^\x00-\x7F]+': ''}, regex=True, inplace=True)
 
     for column in df.columns:
@@ -91,24 +89,18 @@ def clean_laptops_dataset(x_org):
     def tokenize_new_tile(record):
         return [w.text for w in sp(record['new_title'])]
 
-    remove_words = ['with', 'clarinet', 'audiophile', 'end', 'pc', 'french', 'performance', '"', 'burner', 'sd',
-                    'canada', 'certified',
-                    'keyboard', 'backlight', 'professional', 'at', 'beats', 'drive', 'microphone', 'vology',
-                    'america',
-                    'refurbished', 'computer', 'dimm', 'ultrabase', 'audio', ':', 'switching', 'premium', 'special',
-                    'dvd', 'portable',
-                    'speaker', 'buy.net', 'downgrade', '/', '&', 'wireless', 'home', 'notebook', ')', 'edition',
-                    'built-in',
-                    'dualcore', 'high', 'revolve', 'cool', 'and', 'micro', 'aluminum', 'tigerdirect', 'voice',
-                    'nx.m8eaa.007',
-                    'comfyview', 'amazon.com', 'bes', 'ultraportable', 'gb', 'core', 'computers', 'screen', 'slot',
-                    'lan', 'supermulti', 'technology', 'bluray', 'price', 'display', 'dvdrw', '.com',
-                    'internationalaccessories',
-                    'touch', 'card', 'us', 'bluetooth', 'dvdwriter', 'for', 'new', 'comparison', 'webcam', '(',
-                    'laptop',
-                    'accessories', 'brand', 'builtin', 'dvd', 'batt', 'walmart.com', 'ebay', 'gaming', 'windows',
-                    'laptop', 'sealed', 'wifi', 'best', 'topendelectronics', 'cd', 'win']  # , 'g']
-
+    remove_words = {'"', '&', '(', ')', '.com', '/', ':', 'accessories', 'aluminum', 'amazon.com', 'america',
+                    'and', 'at', 'audio', 'audiophile', 'backlight', 'batt', 'beats', 'bes', 'best', 'bluetooth',
+                    'bluray', 'brand', 'built-in', 'builtin', 'burner', 'buy.net', 'canada', 'card', 'cd',
+                    'certified', 'clarinet', 'comfyview', 'comparison', 'computer', 'computers', 'cool', 'core',
+                    'deals', 'dimm', 'display', 'downgrade', 'drive', 'dualcore', 'dvd', 'dvdrw', 'dvdwriter',
+                    'ebay', 'edition', 'end', 'finger', 'for', 'french', 'gaming', 'graphics', 'high', 'home',
+                    'internationalaccessories', 'keyboard', 'lan', 'laptop', 'micro', 'microphone', 'mini.ca',
+                    'new', 'notebook', 'nx.m8eaa.007', 'overstock.com', 'pc', 'performance', 'portable', 'premium',
+                    'price', 'professional', 'refurbished', 'revolve', 'sale', 'screen', 'sd', 'sealed', 'slot',
+                    'speaker', 'special', 'supermulti', 'switching', 'technology', 'thenerds.net', 'tigerdirect',
+                    'topendelectronics', 'touch', 'ultrabase', 'ultraportable', 'us', 'voice', 'vology', 'walmart',
+                    'walmart.com', 'webcam', 'wifi', 'win', 'windows', 'wireless', 'with'}  #, 'g']
     replace_words = {'hewlett-packard': 'hp'}
 
     def clean_title(record):
@@ -126,10 +118,8 @@ def clean_laptops_dataset(x_org):
 
     df['new_title'] = df.apply(clean_title, axis=1)
     irrelevant_regex = re.compile(r'[^a-z0-9.\s]')
-    multispace_regex = re.compile(r'\s\s+')
-    df['new_title'] = df.new_title.str.lower().str.replace(irrelevant_regex, '').str.replace(multispace_regex,
-                                                                                             ' ').str.replace(
-        multispace_regex_2, ' ')
+    multispace_regex = re.compile(r'\s\s+')  # TODO @Ahmed look at this
+    df['new_title'] = df.new_title.str.lower().str.replace(irrelevant_regex, '').str.replace(multispace_regex, ' ')
     df['new_title_tokens'] = df.apply(tokenize_new_tile, axis=1)
 
     # Brand assignment
@@ -177,143 +167,105 @@ def clean_laptops_dataset(x_org):
 
     df['screen_size'] = df.apply(assign_screen_size, axis=1)
 
-    # ram capacity
-    def assign_ram_capacity(record):
-        s = str(record['ram_capacity'])
-        t = str(record['title'])
-        regex = re.compile(r'(\d{1,3})\s?([gm]b)')  # rare chance of encountering MB as an error
-        m = None
-        # ram_c = df['ram_capacity'].str.extract(regex)
-        # title_ram = df['title'].str.extract(regex)
-        if s:
-            m = re.search(regex, s)
-        if m is None:
-            m = re.search(regex, t)
-        if m is None:
+    def assign_laptop_model(record):
+        brand_tokens = record['new_title_tokens']
+        try:
+            brand_index = brand_tokens.index(str(record['brand']))
+            finish_index = brand_index + 2
+            should_break = False
+            for i in range(2 + brand_index, 5 + brand_index, 1):
+                for sc in screen_sizes:
+                    if (sc in brand_tokens[i]):
+                        should_break = True
+                        break
+                if should_break:
+                    if finish_index == i:
+                        finish_index -= 1
+                    break
+                if not (brand_tokens[i].isalpha()):
+                    finish_index = i
+                else:
+                    break
+        except:
+            brand_index = -1
+
+        if brand_index == -1:
             return None
-        else:
-            m = m.group()
-            return re.sub(r'([gm]b)', "gb", m)
+
+        return ' '.join(brand_tokens[brand_index + 1:finish_index + 1])
+
+    df['model'] = df.apply(assign_laptop_model, axis=1)
+
+    def assign_ssd_capacity(record):
+        ssd = str(record['ssd_capacity']).replace(' ', '')
+        ssd2 = str(record['title']).replace(' ', '')
+        hdd = str(record['hdd_capacity']).replace(' ', '')
+
+        if re.search("\d{3,4}gb", ssd):
+            return int(re.findall("\d{3,4}gb", ssd)[0][:-2])
+        if re.search("\dtb", ssd):
+            return int(re.findall("\dtb", ssd)[0][:-2] + '000')
+        if re.search("\d{3,4}gbssd", ssd2):
+            return int(re.findall("\d{3,4}gbssd", ssd2)[0][:-5])
+        if re.search("ssd\d{3,4}gb", ssd2):
+            return int(re.findall("ssd\d{3,4}gb", ssd2)[0][3:-2])
+        if re.search("ssd\dtb", ssd2):
+            return int(re.findall("ssd\dtb", ssd2)[0][3:4] + '000')
+        if re.search("\dtbssd", ssd2):
+            return int(re.findall("\d{1}tbssd", ssd2)[0][0] + '000')
+        if re.search(r"\d{2,4}\s?gb\s?ssd", hdd):
+            return str(re.findall("\d{2,4}\s?gb", hdd)[0][:-2])
+        return None
+
+    df['ssd_capacity'] = df.apply(assign_ssd_capacity, axis=1)
 
     def assign_hdd_capacity(record):
         s = str(record['hdd_capacity']).replace(' ', '')
         s2 = str(record['title'].replace(' ', ''))
 
         if 'ssd' in s:
-            return 0
+            return None
+        if record['ssd_capacity']:
+            return None
 
-        if re.search("\d{3,4}gb", s):
-            return str(re.findall("\d{3,4}gb", s)[0][:-2]) + ' gb'
+        if re.search("\d{3}gb", s): #Possible bug with spaces but it works for now without \s?
+            return str(re.findall("\d{3}gb", s)[0][:-2])
         if re.search("\dtb", s):
-            return str(re.findall("\dtb", s)[0][:-2] + '000') + ' gb'
-        if re.search("\d{3,4}gbhdd", s2):
-            return str(re.findall("\d{3,4}gbhdd", s2)[0][:-5]) + ' gb'
-        if re.search("hdd\d{3,4}gb", s2):
-            return str(re.findall("hdd\d{3,4}gb", s2)[0][3:-2]) + ' gb'
-        if re.search("hdd\d{1}tb", s2):
-            return str(re.findall("hdd\d{1}tb", s2)[0][3:4] + '000') + ' gb'
-        if re.search("\d{1}tbhdd", s2):
-            return str(re.findall("\d{1}tbhdd", s2)[0][0] + '000') + ' gb'
+            return str(re.findall("\dtb", s)[0][:-2] + '000')
+        if re.search("\d{3}gb\s?(hdd)?", s2):
+            return str(re.findall("\d{3}gb", s2)[0][:-2])
+        if re.search("hdd\dtb\s?(hdd)?", s2):
+            return str(re.findall("hdd\dtb", s2)[0][3:4] + '000')
         return None
 
     df['hdd_capacity'] = df.apply(assign_hdd_capacity, axis=1)
+    # ram capacity
+    def assign_ram_capacity(record):
+        cap = str(record['ram_capacity'])
+        title = str(record['title'])
+        rType = str(record['ram_type'])
+        regex = re.compile(r'(\d{1,3})\s?([gm]b)')  # rare chance of encountering MB as an error
+        # regex2 = re.compile(r"\d{1,3}\s?(gb)\s?((ram)|(ddr\s?3)?)")
+        m = None
+        # ram_c = df['ram_capacity'].str.extract(regex)
+        # title_ram = df['title'].str.extract(regex)
+        if cap:
+            m = re.search(regex, cap)
+        if m is None:
+            m = re.search(regex, rType)
+        if m is None:
+            m = re.search(regex, title)  # r"\d{1,3}\s?([gm]b)\s?(ram)|(ddr\s?3)"
+        if m is None:
+            return None
+        else:
+            m = m.group()
+            m = re.sub(r'\s?([gm]b)', "", m)
+            # m = re.sub(r'(ram)|(ddr\s?3)', "", m)
+            if m in [record['hdd_capacity'], record['ssd_capacity']]:  # Picks up HDD for RAM. Fix doesn't work
+                # print("Broke")
+                return None
+            return m
 
-    def assign_ssd_capacity(record):
-        s = str(record['ssd_capacity']).replace(' ', '')
-        s2 = str(record['title'].replace(' ', ''))
-
-        if re.search("\d{3,4}gbssd", s):
-            return str(re.findall("\d{3,4}gb", s)[0][:-2]) + ' gb'
-        if re.search("\dtbssd", s):
-            return str(re.findall("\dtb", s)[0][:-2] + '000') + ' gb'
-        if re.search("\d{3,4}gbssd", s2):
-            return str(re.findall("\d{3,4}gbssd", s2)[0][:-5]) + ' gb'
-        if re.search("ssd\d{3,4}gb", s2):
-            return str(re.findall("ssd\d{3,4}gb", s2)[0][3:-2]) + ' gb'
-        if re.search("ssd\d{1}tb", s2):
-            return str(re.findall("ssd\d{1}tb", s2)[0][3:4] + '000') + ' gb'
-        if re.search("\d{1}tbssd", s2):
-            return str(re.findall("\d{1}tbssd", s2)[0][0] + '000') + ' gb'
-        return None
-
-        # if re.search("\d{3,4}gbssd", s):
-        #     return str(re.findall("\d{3,4}gb", s)[0][:-2]) + ' gb'
-        # if re.search("\dtbssd", s):
-        #     return str(re.findall("\dtb", s)[0][:-2] + '000') + ' gb'
-        # if re.search("\d{3,4}gbssd", s2):
-        #     return str(re.findall("\d{3,4}gbssd", s2)[0][:-5]) + ' gb'
-        # if re.search("ssd\d{3,4}gb", s2):
-        #     return str(re.findall("ssd\d{3,4}gb", s2)[0][3:-2]) + ' gb'
-        # if re.search("ssd\d{1}tb", s2):
-        #     return str(re.findall("ssd\d{1}tb", s2)[0][3:4] + '000') + ' gb'
-        # if re.search("\d{1}tbssd", s2):
-        #     return str(re.findall("\d{1}tbssd", s2)[0][0] + '000') + ' gb'
-        # return None
-
-    df['ssd_capacity'] = df.apply(assign_ssd_capacity, axis=1)
-
-    def assign_laptop_model(record):
-        brand = record['brand']
-        t = record['new_title']
-
-        if brand == 'acer':
-            regex = [r'\s[esrvmpa]\d-?\s?.....-?....?', r'\s[esrvma]?\d-....', r'\s?acer\saspire\s\d{4}-\d{4}',
-                     r'\s?acer\sextensa\s.{0,2}\d{4}\s?\d{0,4}', r'\s?acer\saspire\sas\d{4}-?\s?\d{4}',
-                     r'\s?acer\saspire\s\d{4}-?\s\d{4}']
-            for r in regex:
-                cr = re.compile(r)
-                if re.search(cr, t):
-                    res = re.search(cr, t).group()
-                    for w in ['extensa', 'acer', 'aspire']:
-                        res = res.replace(w, '')
-                    return res
-
-        if brand == 'asus':
-            regex = [r'\sux...-.....', r'\sux.{3,5}-?.....?']  # There is a problem here TODO @Ahmed
-            for r in regex:
-                cr = re.compile(r)
-                if re.search(cr, t):
-                    return re.search(cr, t).group()
-
-        if brand == 'lenovo':
-            regex = [r'\sx\d{3}\s?tablet?\s?\d{0,4}', r'\sx\d{3}\s?laptop?\s?\d{0,4}', r'\sx\d{3}\s?\d{0,4}',
-                     r'\sx\d{1}\scarbon\s\d{4}', r'\sx\d{1}\scarbon touch\s\d{4}']
-
-            for r in regex:
-                cr = re.compile(r)
-                if re.search(cr, t):
-                    res = re.search(cr, t).group()
-                    for w in ['carbon', 'touch', 'tablet', 'laptop']:
-                        res = res.replace(w, '')
-                    return res
-
-        if brand == 'hp':
-            regex = [r'\sfolio\s?\d{4}.', r'\selitebook\s?-?\d{3,4}.',
-                     r'\s\d{2}-.{4,6}', r'hp\s?\d{4}.', r'\spavilion\s?..\s?.{5}',
-                     r'\s?compaq\s?.{5}', r'\s?hp\s?15\s?[a-z]\d{3}[a-z]{1,2}', r'\shp\s?12\s?.{5}',
-                     r'\s?elitebook\srevolve\s?\d{3}\s?', '\s.\d{3}[pgmwm][pgmwm]?']
-            for r in regex:
-                cr = re.compile(r)
-                if re.search(cr, t):
-                    res = re.search(cr, t).group()
-                    for w in ['folio', 'elitebook', 'hp', 'compaq', 'pavilion', ' 15 ', ' 12 ', 'revolve']:
-                        res = res.replace(w, '')
-                    return res
-
-        if brand == 'dell':
-            regex = [r'\s[nmi]\d{3,4}(-\d{4})?', r'\sinspiron\s15?\s?\d{4}', r'\sinspiron\s17?.?\s?\d{4}',
-                     r'\slatitude\s15?\s?\d{4}']
-            for r in regex:
-                cr = re.compile(r)
-                if re.search(cr, t):
-                    res = re.search(cr, t).group()
-                    for w in ['inspiron', '15', '17r', '   ', '  ', 'latitude']:
-                        res = res.replace(w, '')
-                    return res
-
-        return None
-
-    df['model'] = df.apply(assign_laptop_model, axis=1)
     df['ram_capacity'] = df.apply(assign_ram_capacity, axis=1)
 
     df = fill_nulls_with_none(df)
@@ -330,16 +282,73 @@ def clean_laptops_dataset(x_org):
 
     df['model_name'] = df.apply(assign_model_name, axis=1)
 
+    def assign_model_number(record):
+        '''
+        TODO
+        if "x230" in org_title and "3435" in org_title:
+                        mod_item["model"] = "3435"
+
+                    if "hp" in org_title:
+                        #regex for specific HP laptops
+                        hp_li = hp_new_model.findall(org_title)
+                        if len(hp_li) > 0:
+                            mod_item["model"] = " ".join(hp_li[0].replace("-","").replace(" ","").split())
+
+                    if "hp" in org_title and "revolve" in org_title and "810" in org_title:
+                        mod_item["model"] = "revolve 810 "
+                        if "g1" in org_title.lower():
+                            mod_item["model"] += "g1"
+                        elif "g2" in org_title.lower():
+                            mod_item["model"] += "g2"
+
+                    if "hp" in org_title and "compaq" in org_title and "nc6400" in org_title:
+                        mod_item["model"] = "nc6400"
+
+                    if "lenovo" in org_title or "thinkpad" in org_title:
+                        tp_li = lenovo_thinkpad_model.findall(org_title)
+                        if len(tp_li) > 0:
+                            mod_item["model"] = " ".join(tp_li[0].split())
+        '''
+        return "232";
+
+    # df['model_number'] = df.apply(assign_model_number)
+
+    def assign_cpu_type(record):
+        # Find the cpu type
+        cpu_list = ["i5", "i3", "i7", "atom",
+                    "pentium", "celeron", "a-series",
+                    "e-series", "aseries", "eseries",
+                    "a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8", "a9"]
+        regex = re.compile(r"e\d?-\d{3}")
+        regex2 = re.compile(r"e\d?")
+        old = re.compile(r"e-[0-9]{3}")
+
+        for cpu in cpu_list:
+            if record['cpu_type'] is not None and cpu in str(record['cpu_type']):
+                return cpu
+
+            if record['cpu_model'] is not None and cpu in str(record['cpu_model']):
+                return cpu
+            if record['cpu_frequency'] is not None and cpu in str(record['cpu_frequency']):
+                return cpu
+
+            if cpu in str(record['title']):
+                return cpu
+            if record["cpu_brand"] == 'amd':
+                if re.search(regex, record['title']):
+                    m = re.findall(regex, record['title'])[0]
+                    return re.findall(regex2, m)[0]
+
+                if record['cpu_model'] is not None and re.search(regex, record['cpu_model']):
+                    m = re.findall(regex, record['cpu_model'])[0]
+                    return re.findall(regex2, m)[0]
+        return None
+
+    df['cpu_type'] = df.apply(assign_cpu_type, axis=1)
+
     def assign_cpu_model(record):
         model = record['cpu_model']
-        if record['cpu_type'] is not None:
-            if model is not None:
-                model += ' '
-                model += record['cpu_type']
-            else:
-                model = record['cpu_type']
-
-        regex = re.compile(r"-?\d{3,4}([mul]{1,2})")  # For intel cpus
+        regex = re.compile(r"-?\d{1,4}([mu])")  # For intel cpus
         regex2 = re.compile(r"[ea]\d?-\d{1,4}[m]?")  # for amd A and E series. Needs detection after AMD tag in title
         m = None
         if record['cpu_brand'] == 'intel' and model is not None:
@@ -347,6 +356,9 @@ def clean_laptops_dataset(x_org):
             if m is not None:
                 m = m.group()
                 return re.sub(r'-', "", m)
+            m = re.search(r"m\d{3,4}", model)  # TODO Used to pick up i7-M640. Double check
+            if m is not None:
+                return m.group()
         if re.search("intel", record['title']):  # one case where laptop model is 50m and gets caught
             m = re.search(regex, record['title'])
             if m is not None:
@@ -367,35 +379,6 @@ def clean_laptops_dataset(x_org):
 
     df['cpu_model'] = df.apply(assign_cpu_model, axis=1)
 
-    def assign_cpu_type(record):
-        # Find the cpu type
-        cpu_list = ["i5", "i3", "i7", "atom",
-                    "pentium", "celeron", "a-series",
-                    "e-series", "aseries", "eseries",
-                    "a1", "a2", "a3", "a4", "a5", "a6", "a7", "a8", "a9"]
-
-        for cpu in cpu_list:
-            if record['cpu_type'] is not None and cpu in str(record['cpu_type']):
-                return cpu
-
-            if record['cpu_model'] is not None and cpu in str(record['cpu_model']):
-                return cpu
-            if record['cpu_frequency'] is not None and cpu in str(record['cpu_frequency']):
-                return cpu
-
-            if cpu in str(record['title']):
-                return cpu
-
-            if re.search("e-[0-9]{3}", record['title']):
-                return re.findall("e-[0-9]{3}", record['title'])[0]
-
-            if record['cpu_model'] is not None and re.search("e-[0-9]{3}", record['cpu_model']):
-                return re.findall("e-[0-9]{3}", record['cpu_model'])[0]
-
-        return None
-
-    df['cpu_type'] = df.apply(assign_cpu_type, axis=1)
-
     def assign_cpu_frequency(record):
         s = record['cpu_frequency']
         regex = re.compile(r"\d?.\d{1,2}\s?ghz")
@@ -415,36 +398,35 @@ def clean_laptops_dataset(x_org):
 
     df['cpu_frequency'] = df.apply(assign_cpu_frequency, axis=1)
 
+    # def assign_cpu(record):
+    #     cpu_type = record['cpu_type']
+    #     cpu_model = record['cpu_model']
+    #     res = ""
+    #     if cpu_type is not None:
+    #         res += cpu_type
+    #
+    #     if cpu_model is not None:
+    #         res += '-'
+    #         res += cpu_model
+    #     return res
+    #
+    # df['cpu_model'] = df.apply(assign_cpu, axis=1)
+
     def assign_new_title(record):
         # Remove extracted data from the title
+        brand_tokens = record['new_title_tokens']
+        str1 = ""
+        for t in brand_tokens:
+            if t == (record['brand'] or record['cpu_brand'] or record['cpu_model'] or record['cpu_frequency']
+                     or record['ram_capacity'] or record['hdd_capacity'] or record['ssd_capacity']):
+                t = ""
+            str1 += t + " "
 
-        # Remove model name
-        record['new_title'] = record['nwe_titl']
+        return str1
 
-        # Remove brand
-        # Remove screen size
-        # Remove cpu brand
-        # Remove cpu type
-        # Ram capacity, hdd capacity, ssd capacity
-
-    def assign_cpu(record):
-        cpu_type = record['cpu_type']
-        cpu_model = record['cpu_model']
-
-        res = ""
-        if cpu_type is not None:
-            res += cpu_type
-
-        if cpu_model is not None:
-            res += '-'
-            res += cpu_model
-
-        return res
-
-    df['cpu_model'] = df.apply(assign_cpu, axis=1)
+    df['new_title'] = df.apply(assign_new_title, axis=1)
 
     return df
-
 
 def clean_products_dataset(x_org):
     spacy.cli.download("en_core_web_sm")
@@ -548,3 +530,4 @@ def clean_products_dataset(x_org):
                                                                                                    ' ')
 
     return x4_dev
+
