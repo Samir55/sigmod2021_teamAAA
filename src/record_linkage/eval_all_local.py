@@ -6,13 +6,13 @@ import recordlinkage as rl
 import lightgbm as lgb
 import numpy as np
 
-from ..dedupe.clean_datasets_2 import clean_laptops_dataset as clean_x2
-from ..dedupe.clean_datasets_3 import clean_laptops_dataset as clean_x3
-from .record_linkage_dedupe_trainer import clean_products_dataset_dedupe as clean_x4_dedupe
-from .record_linkage_dedupe_trainer import clean_products_dataset_rf as clean_x4_rf
+from clean_datasets_2 import clean_laptops_dataset as clean_x2
+from clean_datasets_3 import clean_laptops_dataset as clean_x3
+from record_linkage_dedupe_trainer_x4 import clean_products_dataset_dedupe as clean_x4_dedupe
+from record_linkage_dedupe_trainer_x4 import clean_products_dataset_rf as clean_x4_rf
 
 LOCAL = True
-NUM_CORES = 77
+NUM_CORES = 8
 
 partition_threshold = {
     'x2': 0.3,
@@ -69,6 +69,22 @@ def deduper_eval(dataset_type: str, dataset):
 
 def eval_lightgbm_dedupe(dataset_type: str, dataset_rf, dataset_dedupe):
     #
+    # Get dedupe features
+    #
+    # Create deduper model
+    with open('../../trained_models/combined/trained_{}_settings.json'.format(dataset_type), 'rb') as fin:
+        deduper = dedupe.StaticDedupe(fin, num_cores=NUM_CORES)
+
+    cols = ['name', 'brand', 'size', 'product_type']
+
+    to_dedupe = dataset_dedupe[cols]
+    to_dedupe_dict = to_dedupe.to_dict(orient='index')
+
+    # Cluster (prediction stage)
+    clustered_dupes = deduper.partition(to_dedupe_dict, partition_threshold[dataset_type])
+    print('# duplicate sets', len(clustered_dupes))
+
+    #
     # Get the recordlinkage
     #
     indexer = rl.Index()
@@ -86,27 +102,11 @@ def eval_lightgbm_dedupe(dataset_type: str, dataset_rf, dataset_dedupe):
     compare_cl.string('name', 'name', method='qgram')
     compare_cl.string('name', 'name', method='damerau_levenshtein')
     compare_cl.string('name', 'name', method='levenshtein')
-    # compare_cl.string('name', 'name', method='smith_waterman')
+    compare_cl.string('name', 'name', method='smith_waterman')
     compare_cl.string('name', 'name', method='jarowinkler')
-    # compare_cl.string('name', 'name', method='lcs')
+    compare_cl.string('name', 'name', method='lcs')
 
     features = compare_cl.compute(candidate_links, dataset_rf)
-
-    #
-    # Get dedupe features
-    #
-    # Create deduper model
-    with open('../../trained_models/deduper/sub_5/trained_{}_settings.json'.format(dataset_type), 'rb') as fin:
-        deduper = dedupe.StaticDedupe(fin, num_cores=NUM_CORES)
-
-    cols = ['name', 'brand', 'size', 'product_type']
-
-    to_dedupe = dataset_dedupe[cols]
-    to_dedupe_dict = to_dedupe.to_dict(orient='index')
-
-    # Cluster (prediction stage)
-    clustered_dupes = deduper.partition(to_dedupe_dict, partition_threshold[dataset_type])
-    print('# duplicate sets', len(clustered_dupes))
 
     features['xy_same_entity'] = pd.Series(np.zeros(len(features)))
     features.xy_same_entity = 0.0
@@ -185,9 +185,9 @@ if __name__ == '__main__':
 
     # Now, we evaluate based on the trained models
     print("Cleaning X2 dataset")
-    # x2 = clean_x2(x2)
+    x2 = clean_x2(x2)
     print("Evaluating X2 dataset")
-    # output = output.append(deduper_eval('x2', x2))
+    output = output.append(deduper_eval('x2', x2))
 
     print("Cleaning X3 dataset")
     x3 = clean_x3(x3)
