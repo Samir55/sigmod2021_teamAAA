@@ -33,6 +33,7 @@ def deduper_eval(dataset_type: str, dataset):
             'cpu_type',
             'ram_capacity',
             'hdd_capacity',
+            'has_ssd',
             'ssd_capacity',
             'title',
             'screen_size',
