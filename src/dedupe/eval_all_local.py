@@ -45,7 +45,7 @@ def deduper_eval(dataset_type: str, dataset):
             'screen_size',
             'model']
     else:
-        cols = ['name', 'brand', 'size', 'product_type']
+        cols = ['name', 'name_2', 'model', 'line', 'brand', 'size', 'product_type']
     to_dedupe = dataset[cols]
     to_dedupe_dict = to_dedupe.to_dict(orient='index')
 
@@ -109,7 +109,7 @@ if __name__ == '__main__':
     # output = output.append(deduper_eval('x2', x2))
 
     print("Cleaning X3 dataset")
-    x3 = clean_x3(x3)
+    # x3 = clean_x3(x3)
     print("Evaluating X3 dataset")
     # output = output.append(deduper_eval('x3', x3))
 

@@ -87,6 +87,8 @@ def clean_laptops_dataset(x_org):
             continue
         df[column] = df[column].str.lower().str.replace(irrelevant_regex, ' ').str.replace(multispace_regex, ' ')
 
+    df['title_org'] = df['title']
+
     # Tokenize the new title
     def tokenize_new_tile(record):
         return [w.text for w in sp(record['new_title'])]
@@ -183,17 +185,23 @@ def clean_laptops_dataset(x_org):
         t = str(record['title'])
         regex = re.compile(r'(\d{1,3})\s?([gm]b)')  # rare chance of encountering MB as an error
         m = None
-        # ram_c = df['ram_capacity'].str.extract(regex)
-        # title_ram = df['title'].str.extract(regex)
         if s:
             m = re.search(regex, s)
         if m is None:
             m = re.search(regex, t)
+
         if m is None:
             return None
-        else:
-            m = m.group()
-            return re.sub(r'([gm]b)', "gb", m)
+
+        m = m.group()
+        res = (re.sub(r'([gm]b)', "gb", m)).replace(' ', '')
+
+        ram = int(res[:-2])
+
+        if ram > 64:
+            return None
+
+        return res
 
     def assign_hdd_capacity(record):
         s = str(record['hdd_capacity']).replace(' ', '')
@@ -202,19 +210,25 @@ def clean_laptops_dataset(x_org):
         if 'ssd' in s:
             return 0
 
+        res = None
+
         if re.search("\d{3,4}gb", s):
-            return str(re.findall("\d{3,4}gb", s)[0][:-2]) + ' gb'
-        if re.search("\dtb", s):
-            return str(re.findall("\dtb", s)[0][:-2] + '000') + ' gb'
-        if re.search("\d{3,4}gbhdd", s2):
-            return str(re.findall("\d{3,4}gbhdd", s2)[0][:-5]) + ' gb'
-        if re.search("hdd\d{3,4}gb", s2):
-            return str(re.findall("hdd\d{3,4}gb", s2)[0][3:-2]) + ' gb'
-        if re.search("hdd\d{1}tb", s2):
-            return str(re.findall("hdd\d{1}tb", s2)[0][3:4] + '000') + ' gb'
-        if re.search("\d{1}tbhdd", s2):
-            return str(re.findall("\d{1}tbhdd", s2)[0][0] + '000') + ' gb'
-        return None
+            res = str(re.findall("\d{3,4}gb", s)[0][:-2]) + ' gb'
+        elif re.search("\dtb", s):
+            res = str(re.findall("\dtb", s)[0][:-2] + '000') + ' gb'
+        elif re.search("\d{3,4}gbhdd", s2):
+            res = str(re.findall("\d{3,4}gbhdd", s2)[0][:-5]) + ' gb'
+        elif re.search("hdd\d{3,4}gb", s2):
+            res = str(re.findall("hdd\d{3,4}gb", s2)[0][3:-2]) + ' gb'
+        elif re.search("hdd\d{1}tb", s2):
+            res = str(re.findall("hdd\d{1}tb", s2)[0][3:4] + '000') + ' gb'
+        elif re.search("\d{1}tbhdd", s2):
+            res = str(re.findall("\d{1}tbhdd", s2)[0][0] + '000') + ' gb'
+
+        if res is None:
+            return None
+
+        return res
 
     df['hdd_capacity'] = df.apply(assign_hdd_capacity, axis=1)
 
@@ -222,14 +236,14 @@ def clean_laptops_dataset(x_org):
         s = str(record['ssd_capacity']).replace(' ', '')
         s2 = str(record['title'].replace(' ', ''))
 
-        if re.search("\d{3,4}gbssd", s):
-            return str(re.findall("\d{3,4}gb", s)[0][:-2]) + ' gb'
+        if re.search("\d{3}gbssd", s):
+            return str(re.findall("\d{3}gb", s)[0][:-2]) + ' gb'
         if re.search("\dtbssd", s):
             return str(re.findall("\dtb", s)[0][:-2] + '000') + ' gb'
-        if re.search("\d{3,4}gbssd", s2):
-            return str(re.findall("\d{3,4}gbssd", s2)[0][:-5]) + ' gb'
-        if re.search("ssd\d{3,4}gb", s2):
-            return str(re.findall("ssd\d{3,4}gb", s2)[0][3:-2]) + ' gb'
+        if re.search("\d{3}gbssd", s2):
+            return str(re.findall("\d{3}gbssd", s2)[0][:-5]) + ' gb'
+        if re.search("ssd\d{3}gb", s2):
+            return str(re.findall("ssd\d{3}gb", s2)[0][3:-2]) + ' gb'
         if re.search("ssd\d{1}tb", s2):
             return str(re.findall("ssd\d{1}tb", s2)[0][3:4] + '000') + ' gb'
         if re.search("\d{1}tbssd", s2):
@@ -250,7 +264,14 @@ def clean_laptops_dataset(x_org):
         #     return str(re.findall("\d{1}tbssd", s2)[0][0] + '000') + ' gb'
         # return None
 
+    def has_ssd(record):
+        s = str(record['ssd_capacity']).replace(' ', '')
+        s2 = str(record['title'].replace(' ', ''))
+
+        return 'ssd' in s + ' ' + s2
+
     df['ssd_capacity'] = df.apply(assign_ssd_capacity, axis=1)
+    df['has_ssd'] = df.apply(has_ssd, axis=1)
 
     def assign_laptop_model(record):
         brand = record['brand']
@@ -266,14 +287,14 @@ def clean_laptops_dataset(x_org):
                     res = re.search(cr, t).group()
                     for w in ['extensa', 'acer', 'aspire']:
                         res = res.replace(w, '')
-                    return res
+                    return res.lstrip().rstrip()
 
         if brand == 'asus':
             regex = [r'\sux...-.....', r'\sux.{3,5}-?.....?']  # There is a problem here TODO @Ahmed
             for r in regex:
                 cr = re.compile(r)
                 if re.search(cr, t):
-                    return re.search(cr, t).group()
+                    return re.search(cr, t).group().lstrip().rstrip()
 
         if brand == 'lenovo':
             regex = [r'\sx\d{3}\s?tablet?\s?\d{0,4}', r'\sx\d{3}\s?laptop?\s?\d{0,4}', r'\sx\d{3}\s?\d{0,4}',
@@ -285,12 +306,12 @@ def clean_laptops_dataset(x_org):
                     res = re.search(cr, t).group()
                     for w in ['carbon', 'touch', 'tablet', 'laptop']:
                         res = res.replace(w, '')
-                    return res
+                    return res.lstrip().rstrip()
 
         if brand == 'hp':
             regex = [r'\sfolio\s?\d{4}.', r'\selitebook\s?-?\d{3,4}.',
                      r'\s\d{2}-.{4,6}', r'hp\s?\d{4}.', r'\spavilion\s?..\s?.{5}',
-                     r'\s?compaq\s?.{5}', r'\s?hp\s?15\s?[a-z]\d{3}[a-z]{1,2}', r'\shp\s?12\s?.{5}',
+                     r'\s?compaq\s?.{5,6}', r'\s?hp\s?15\s?[a-z]\d{3}[a-z]{1,2}', r'\shp\s?12\s?.{5}',
                      r'\s?elitebook\srevolve\s?\d{3}\s?', '\s.\d{3}[pgmwm][pgmwm]?']
             for r in regex:
                 cr = re.compile(r)
@@ -298,7 +319,7 @@ def clean_laptops_dataset(x_org):
                     res = re.search(cr, t).group()
                     for w in ['folio', 'elitebook', 'hp', 'compaq', 'pavilion', ' 15 ', ' 12 ', 'revolve']:
                         res = res.replace(w, '')
-                    return res
+                    return res.lstrip().rstrip()
 
         if brand == 'dell':
             regex = [r'\s[nmi]\d{3,4}(-\d{4})?', r'\sinspiron\s15?\s?\d{4}', r'\sinspiron\s17?.?\s?\d{4}',
@@ -309,7 +330,7 @@ def clean_laptops_dataset(x_org):
                     res = re.search(cr, t).group()
                     for w in ['inspiron', '15', '17r', '   ', '  ', 'latitude']:
                         res = res.replace(w, '')
-                    return res
+                    return res.lstrip().rstrip()
 
         return None
 
@@ -347,11 +368,19 @@ def clean_laptops_dataset(x_org):
             if m is not None:
                 m = m.group()
                 return re.sub(r'-', "", m)
+            #
+            # regex = re.compile(r"i[3579][-\s]?\d{3,4}.")  # For intel cpus
+            # m = re.search(regex, model)
+            # if m is not None:
+            #     m = m.group()
+            #     return re.sub(r'-', "", m)
+
         if re.search("intel", record['title']):  # one case where laptop model is 50m and gets caught
             m = re.search(regex, record['title'])
             if m is not None:
                 m = m.group()
                 return re.sub(r'-', "", m)
+
         if record['cpu_brand'] == 'amd' and model is not None:
             m = re.search(regex2, model)
             if m is not None:
@@ -443,108 +472,6 @@ def clean_laptops_dataset(x_org):
 
     df['cpu_model'] = df.apply(assign_cpu, axis=1)
 
+    df['new_title_2'] = df['new_title']
+
     return df
-
-
-def clean_products_dataset(x_org):
-    spacy.cli.download("en_core_web_sm")
-
-    x4_dev = convert_numbers_to_strings(x_org, ['price']).copy(deep=True)
-    x4_dev.set_index('instance_id', inplace=True)
-
-    def get_type(record):
-        name = record['name'].lower()
-
-        if pd.isna(record['size']):
-            if 'tv' in name:
-                return 'tv'
-            return 'mobile'
-
-        flash_keywords = ['usb', 'drive']
-        memory_stick_keywords = ['card', 'stick', 'sd', 'microsd', 'hc', 'class', 'speicherkarte']  # Add variants here
-
-        is_flash = False
-        is_memory = False
-
-        for w in flash_keywords:
-            if w in name:
-                is_flash = True
-                break
-
-        for w in memory_stick_keywords:
-            if w in name:
-                is_memory = True
-                break
-
-        if is_flash:
-            return 'flash'
-
-        if is_memory:
-            return 'stick'
-
-        return 'stick'
-
-    with open('../../data/sigmod/translations_lookup_all.json') as fin:
-        variants = json.load(fin)
-
-    with open('../../data/sigmod/langs_dict.json') as fin:
-        json.load(fin)
-
-    # Alpha numeric
-    irrelevant_regex = re.compile(r'[^a-z0-9,.\-\s]')
-    multispace_regex = re.compile(r'\s\s+')  # Why it doesn't work
-    x4_dev.replace({r'[^\x00-\x7F]+': ''}, regex=True, inplace=True)
-
-    for column in x4_dev.columns:
-        if column == 'instance_id':
-            continue
-        x4_dev[column] = x4_dev[column].str.lower().str.replace(irrelevant_regex, ' ').str.replace(multispace_regex,
-                                                                                                   ' ')
-
-    x4_dev['product_type'] = x4_dev.apply(get_type, axis=1)
-    x4_dev.drop('price', inplace=True, axis=1)
-    x4_dev['size'] = x4_dev['size'].str.lower().str.replace(' ', '')
-    x4_dev['size'] = x4_dev['size'].where(x4_dev['size'].notnull(), 0)
-
-    # Remove unwanted words from the name
-    for i in range(len(x4_dev)):
-        record = x4_dev.iloc[i]
-
-        name = record['name']
-
-        # remove unnecessary characters
-        basic_punct = '-/\*_,:;/()®™'
-        punct_to_space = str.maketrans(basic_punct, ' ' * len(basic_punct))  # map punctuation to space
-        name = name.translate(punct_to_space)
-
-        # remove brand
-        name = name.replace(record['brand'], '')
-
-        # remove size
-
-        if record.product_type in ['flash', 'stick']:
-            name = re.sub('\d\d\d\s?gb', '', name, 6)
-            name = re.sub('\d\d\s?gb', '', name, 6)
-            name = re.sub('\d\s?gb', '', name, 6)
-
-        tokens = name.split(' ')
-        for wd, wdtl in variants.items():
-            while wd in tokens:
-                tokens.remove(wd)
-            for wdt in wdtl:
-                while wdt in tokens:
-                    tokens.remove(wdt)
-
-        unneeded_words = ['mmoire', 'speicherkarte', 'flashgeheugenkaart', 'flash', 'stick', 'speed', 'high']
-        for w in unneeded_words:
-            while w in tokens:
-                tokens.remove(w)
-        x4_dev.iloc[i]['name'] = ' '.join(tokens)
-
-    for column in x4_dev.columns:
-        if column == 'instance_id':
-            continue
-        x4_dev[column] = x4_dev[column].str.lower().str.replace(irrelevant_regex, ' ').str.replace(multispace_regex,
-                                                                                                   ' ')
-
-    return x4_dev

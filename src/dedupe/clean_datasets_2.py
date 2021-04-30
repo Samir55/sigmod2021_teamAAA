@@ -172,22 +172,29 @@ def clean_laptops_dataset(x_org):
     df['screen_size'] = df.apply(assign_screen_size, axis=1)
 
     # ram capacity
+    # ram capacity
     def assign_ram_capacity(record):
         s = str(record['ram_capacity'])
         t = str(record['title'])
         regex = re.compile(r'(\d{1,3})\s?([gm]b)')  # rare chance of encountering MB as an error
         m = None
-        # ram_c = df['ram_capacity'].str.extract(regex)
-        # title_ram = df['title'].str.extract(regex)
         if s:
             m = re.search(regex, s)
         if m is None:
             m = re.search(regex, t)
+
         if m is None:
             return None
-        else:
-            m = m.group()
-            return re.sub(r'([gm]b)', "gb", m)
+
+        m = m.group()
+        res = (re.sub(r'([gm]b)', "gb", m)).replace(' ', '')
+
+        ram = int(res[:-2])
+
+        if ram > 64:
+            return None
+
+        return res
 
     def assign_hdd_capacity(record):
         s = str(record['hdd_capacity']).replace(' ', '')
@@ -196,19 +203,25 @@ def clean_laptops_dataset(x_org):
         if 'ssd' in s:
             return 0
 
+        res = None
+
         if re.search("\d{3,4}gb", s):
-            return str(re.findall("\d{3,4}gb", s)[0][:-2]) + ' gb'
-        if re.search("\dtb", s):
-            return str(re.findall("\dtb", s)[0][:-2] + '000') + ' gb'
-        if re.search("\d{3,4}gbhdd", s2):
-            return str(re.findall("\d{3,4}gbhdd", s2)[0][:-5]) + ' gb'
-        if re.search("hdd\d{3,4}gb", s2):
-            return str(re.findall("hdd\d{3,4}gb", s2)[0][3:-2]) + ' gb'
-        if re.search("hdd\d{1}tb", s2):
-            return str(re.findall("hdd\d{1}tb", s2)[0][3:4] + '000') + ' gb'
-        if re.search("\d{1}tbhdd", s2):
-            return str(re.findall("\d{1}tbhdd", s2)[0][0] + '000') + ' gb'
-        return None
+            res = str(re.findall("\d{3,4}gb", s)[0][:-2]) + ' gb'
+        elif re.search("\dtb", s):
+            res = str(re.findall("\dtb", s)[0][:-2] + '000') + ' gb'
+        elif re.search("\d{3,4}gbhdd", s2):
+            res = str(re.findall("\d{3,4}gbhdd", s2)[0][:-5]) + ' gb'
+        elif re.search("hdd\d{3,4}gb", s2):
+            res = str(re.findall("hdd\d{3,4}gb", s2)[0][3:-2]) + ' gb'
+        elif re.search("hdd\d{1}tb", s2):
+            res = str(re.findall("hdd\d{1}tb", s2)[0][3:4] + '000') + ' gb'
+        elif re.search("\d{1}tbhdd", s2):
+            res = str(re.findall("\d{1}tbhdd", s2)[0][0] + '000') + ' gb'
+
+        if res is None:
+            return None
+
+        return res
 
     df['hdd_capacity'] = df.apply(assign_hdd_capacity, axis=1)
 
@@ -244,7 +257,14 @@ def clean_laptops_dataset(x_org):
         #     return str(re.findall("\d{1}tbssd", s2)[0][0] + '000') + ' gb'
         # return None
 
+    def has_ssd(record):
+        s = str(record['ssd_capacity']).replace(' ', '')
+        s2 = str(record['title'].replace(' ', ''))
+
+        return 'ssd' in s + ' ' + s2
+
     df['ssd_capacity'] = df.apply(assign_ssd_capacity, axis=1)
+    df['has_ssd'] = df.apply(has_ssd, axis=1)
 
     def assign_laptop_model(record):
         brand = record['brand']

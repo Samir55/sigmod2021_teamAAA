@@ -46,6 +46,7 @@ def dedupe_train(params: DictConfig):
             {'field': 'ram_capacity', 'type': 'Exact', 'has missing': True},
             {'field': 'hdd_capacity', 'type': 'Exact', 'has missing': True},
             {'field': 'ssd_capacity', 'type': 'Exact', 'has missing': True},
+            {'field': 'has_ssd', 'type': 'Exact', 'has missing': True},
             # {'field': 'new_title', 'type': 'Text', 'has missing': True},
             # {'field': 'screen_size', 'type': 'Exact', 'has missing': True},
             {'field': 'model', 'type': 'Text', 'has missing': True}
@@ -65,9 +66,11 @@ def dedupe_train(params: DictConfig):
             {'field': 'ram_capacity', 'type': 'Exact', 'has missing': True},
             # {'field': 'hdd_capacity', 'type': 'Exact', 'has missing': True},
             # {'field': 'ssd_capacity', 'type': 'Exact', 'has missing': True},
-            {'field': 'new_title', 'type': 'Text', 'has missing': True},
+            # {'field': 'has_ssd', 'type': 'Exact', 'has missing': True},
+            # {'field': 'new_title', 'type': 'Text', 'has missing': True},
+            # {'field': 'title_org', 'type': 'Text', 'has missing': True},
             # {'field': 'screen_size', 'type': 'Exact', 'has missing': True},
-            {'field': 'model', 'type': 'Text', 'has missing': True}
+            {'field': 'model', 'type': 'Text', 'has missing': True},
         ]
     else:
         fields = [
@@ -94,6 +97,33 @@ def dedupe_train(params: DictConfig):
     for d in distinct:
         trainig_data['distinct'].append((to_dedupe_dict[d['left_instance_id']], to_dedupe_dict[d['right_instance_id']]))
 
+    if params.dataset_type == 'laptops_2':
+        trainig_data['distinct'].append(
+            (
+            {'instance_id': 'www.tigerdirect.com//12', 'brand': 'lenovo', 'cpu_brand': 'intel', 'cpu_model': 'i5-3320m',
+             'cpu_type': 'i5', 'cpu_frequency': '2.6', 'ram_capacity': '4gb', 'ram_type': '1600mhz pc3-12800. ddr3',
+             'ram_frequency': '1600mhz pc3-12800', 'hdd_capacity': '500 gb', 'ssd_capacity': None, 'weight': '3.97 lbs',
+             'dimensions': '9 . 1.1 - 1.23 ',
+             'title': 'lenovo thinkpad x230t 3435-22u tablet pc - 3rd generation intel core i5-3320m 2.6ghz, 4gb ddr3, 500gb hdd, 12.5 multi-touch display, windows 7 professional 64-bit at tigerdirect.com',
+             'new_title': 'lenovo thinkpad x230t 343522u tablet 3rd enerion intel i53320m 2.6hz 4b ddr3 500b hdd 12.5 multi windows 7 64bit tierdirect',
+             'new_title_tokens': ['lenovo', 'thinkpad', 'x230', 't', '343522u', 'tablet', '3rd', 'enerion', 'intel',
+                                  'i53320',
+                                  'm', '2.6hz', '4b', 'ddr3', '500b', 'hdd', '12.5', 'multi', 'windows', '7', '64bit',
+                                  'tierdirect'], 'screen_size': '12.5', 'has_ssd': False, 'model': ' x230',
+             'model_name': None},
+            {'instance_id': 'buy.net//1960', 'brand': 'lenovo', 'cpu_brand': 'intel', 'cpu_model': 'i5-3320m',
+             'cpu_type': 'i5', 'cpu_frequency': '2.60 ', 'ram_capacity': '4gb', 'ram_type': 'ddr3 sdram. ddr3 sdram',
+             'ram_frequency': None, 'hdd_capacity': '320 gb', 'ssd_capacity': None, 'weight': '3.97 lbs',
+             'dimensions': None,
+             'title': 'lenovo x230 34352ju tablet pc - 12.5 - in-plane switching ips technology - wireless lan - intel core i5 i5-3320m 2.60 ghz - black 4 gb ram - 320 gb hdd - windows 7 professional 64-bit - convertible - 1366 x 768 multi-touch screen display led price comparison at buy.net',
+             'new_title': 'lenovo x230 34352ju tablet 12.5 inpe ips technoloy intel i5 i53320m 2.60 hz black 4 b ram 320 b hdd windows 7 64bit convertible 1366 x 768 multi led ',
+             'new_title_tokens': ['lenovo', 'x230', '34352ju', 'tablet', '12.5', 'inpe', 'ips', 'technoloy', 'intel',
+                                  'i5',
+                                  'i53320', 'm', '2.60', 'hz', 'black', '4', 'b', 'ram', '320', 'b', 'hdd', 'windows',
+                                  '7',
+                                  '64bit', 'convertible', '1366', 'x', '768', 'multi', 'led'], 'screen_size': '12.5',
+             'has_ssd': False, 'model': ' x230 3435', 'model_name': None}))
+
     # Save the training data
     with open(params.training_file, 'w') as fout:
         json.dump(trainig_data, fout)
@@ -119,6 +149,8 @@ def dedupe_train(params: DictConfig):
 
     print("Model predicates:")
     print(deduper.predicates)
+
+    print(deduper.uncertain_pairs())
 
     #
     # # Write our original data back out to a CSV with a new column called
