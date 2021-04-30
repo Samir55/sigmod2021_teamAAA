@@ -65,7 +65,7 @@ def deduper_eval(dataset_type: str, dataset):
 
 def eval_lightgbm_dedupe(dataset_type: str, dataset_rf, dataset_dedupe):
     # Create deduper model
-    with open('../../trained_models/combined/trained_{}_settings.json'.format(dataset_type), 'rb') as fin:
+    with open('../../trained_models/combined_2/trained_{}_settings.json'.format(dataset_type), 'rb') as fin:
         deduper = dedupe.StaticDedupe(fin, num_cores=NUM_CORES)
 
     cols = ['name', 'brand', 'size', 'product_type']
@@ -94,8 +94,8 @@ def eval_lightgbm_dedupe(dataset_type: str, dataset_rf, dataset_dedupe):
     compare_cl.string('name', 'name', method='damerau_levenshtein')
     compare_cl.string('name', 'name', method='levenshtein')
     compare_cl.string('name', 'name', method='jarowinkler')
-    # compare_cl.string('name', 'name', method='smith_waterman')
-    # compare_cl.string('name', 'name', method='lcs')
+    compare_cl.string('name', 'name', method='smith_waterman')
+    compare_cl.string('name', 'name', method='lcs')
     # compare_cl.string('price', 'price')
 
     # Features
@@ -120,7 +120,7 @@ def eval_lightgbm_dedupe(dataset_type: str, dataset_rf, dataset_dedupe):
                     features.loc[r_k, 'xy_same_entity'] = p
 
     # Now load the lightgbm
-    bst = lgb.Booster(model_file='../../trained_models/combined/x4_lgb_classifier.txt')
+    bst = lgb.Booster(model_file='../../trained_models/combined_2/x4_lgb_classifier.txt')
 
     # Predict
     confs = bst.predict(features)
