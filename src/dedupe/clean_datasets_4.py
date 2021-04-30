@@ -227,6 +227,9 @@ def clean_products_dataset(x_org):
     def clean_name(record):
         title = record['name']
 
+        if str(title) == 'nan':
+            return None
+
         # Remove unneeded words
         for w in remove_words:
             title = title.replace(w, '')
@@ -308,6 +311,9 @@ def clean_products_dataset(x_org):
         brand = record['brand']
         product_type = record['product_type']
 
+        if brand not in brand_lines:
+            return None
+
         for w in brand_lines[brand][product_type]:
             if w in name:
                 return w
@@ -318,6 +324,9 @@ def clean_products_dataset(x_org):
         name = record['name'].lower()
         brand = record['brand']
         product_type = record['product_type']
+
+        if brand not in model_regex:
+            return None
 
         for t in model_regex[brand][product_type]:
             cr = re.compile(t)
@@ -341,7 +350,8 @@ def clean_products_dataset(x_org):
         name = name.translate(punct_to_space)
 
         # remove brand
-        name = name.replace(record['brand'], '')
+        if str(record['brand']) != 'nan':
+            name = name.replace(record['brand'], '')
 
         # remove size
 
