@@ -295,7 +295,7 @@ def get_features(x_dev, candidate_links, dedupe_features=None):
     compare_cl.exact('brand', 'brand')
     compare_cl.exact('product_type', 'product_type')
     compare_cl.exact('size', 'size')
-    compare_cl.string('price', 'price')
+    # compare_cl.string('price', 'price')
     compare_cl.string('name', 'name', method='qgram')
     compare_cl.string('name', 'name', method='damerau_levenshtein')
     compare_cl.string('name', 'name', method='levenshtein')

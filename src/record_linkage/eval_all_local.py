@@ -98,7 +98,7 @@ def eval_lightgbm_dedupe(dataset_type: str, dataset_rf, dataset_dedupe):
     compare_cl.exact('brand', 'brand')
     compare_cl.exact('product_type', 'product_type')
     compare_cl.exact('size', 'size')
-    compare_cl.string('price', 'price')
+    # compare_cl.string('price', 'price')
     compare_cl.string('name', 'name', method='qgram')
     compare_cl.string('name', 'name', method='damerau_levenshtein')
     compare_cl.string('name', 'name', method='levenshtein')
@@ -195,7 +195,6 @@ if __name__ == '__main__':
     # output = output.append(deduper_eval('x3', x3))
 
     print("Cleaning X4 dataset")
-    x4 = x4.sample(100)
     x4_rf = clean_x4_rf(x4)
     x4_dedupe = clean_x4_dedupe(x4)
 
