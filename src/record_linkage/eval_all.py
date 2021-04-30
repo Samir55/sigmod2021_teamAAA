@@ -181,14 +181,14 @@ if __name__ == '__main__':
 
     # Now, we evaluate based on the trained models
     print("Cleaning X2 dataset")
-    # x2 = clean_x2(x2)
+    x2 = clean_x2(x2)
     print("Evaluating X2 dataset")
-    # output = output.append(deduper_eval('x2', x2))
+    output = output.append(deduper_eval('x2', x2))
 
     print("Cleaning X3 dataset")
-    # x3 = clean_x3(x3)
+    x3 = clean_x3(x3)
     print("Evaluating X3 dataset")
-    # output = output.append(deduper_eval('x3', x3))
+    output = output.append(deduper_eval('x3', x3))
 
     print("Cleaning X4 dataset")
     x4_rf = clean_x4_rf(x4)
