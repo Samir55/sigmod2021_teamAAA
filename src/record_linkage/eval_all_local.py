@@ -12,7 +12,7 @@ from record_linkage_dedupe_trainer_x4 import clean_products_dataset_dedupe as cl
 from record_linkage_dedupe_trainer_x4 import clean_products_dataset_rf as clean_x4_rf
 
 LOCAL = True
-NUM_CORES = 77
+NUM_CORES = 8
 
 partition_threshold = {
     'x2': 0.3,

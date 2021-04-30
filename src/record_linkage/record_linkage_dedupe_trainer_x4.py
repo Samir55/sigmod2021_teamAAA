@@ -56,10 +56,10 @@ if __name__ == '__main__':
     features = get_features(x4, candidate_links)
     print("Time taken to get the features using 8 cores: {} sec".format(time.time() - t))
 
-    # Dedupe trainer
-    x4_org = pd.read_csv('../../data/sigmod/X4.csv')
-    x4 = clean_products_dataset_dedupe(x4_org)
-
+    # # Dedupe trainer
+    # x4_org = pd.read_csv('../../data/sigmod/X4.csv')
+    # x4 = clean_products_dataset_dedupe(x4_org)
+    #
     params = OmegaConf.create()
     params.dataset_type = 'products'
     params.train_dataset_path = "../../data/sigmod/X4.csv"
@@ -73,75 +73,75 @@ if __name__ == '__main__':
     params.blocked_proportion = 0.9
     params.num_cores = 14
     params.index_predicates = True
-
-    to_dedupe_dict = x4.to_dict(orient='index')
-    fields = [
-        {'field': 'name', 'type': 'Text', 'has missing': False},
-        {'field': 'brand', 'type': 'Exact', 'has missing': False},
-        {'field': 'size', 'type': 'Exact', 'has missing': False},
-        {'field': 'product_type', 'type': 'Exact', 'has missing': False}]
-
-    # Create deduper model
-    print("Creating dedupe model.")
-    deduper = dedupe.Dedupe(fields, num_cores=params.num_cores)
-
-    # Get the label data
-    y = pd.read_csv(params.label_dataset_path)
-
-    trainig_data = {'match': [], 'distinct': []}
-    match = y[y.label == 1].to_dict(orient='row')
-    distinct = y[y.label == 0].to_dict(orient='row')
-    for m in match:
-        trainig_data['match'].append((to_dedupe_dict[m['left_instance_id']], to_dedupe_dict[m['right_instance_id']]))
-    for d in distinct:
-        trainig_data['distinct'].append((to_dedupe_dict[d['left_instance_id']], to_dedupe_dict[d['right_instance_id']]))
-
-    # Save the training data
-    with open(params.training_file, 'w') as fout:
-        json.dump(trainig_data, fout)
-
-    print("Preparing the training data.")
-    with open(params.training_file) as tf:
-        deduper.prepare_training(to_dedupe_dict, training_file=tf,
-                                 sample_size=params.sample_size,
-                                 blocked_proportion=params.blocked_proportion)
-
-    # Train the model
-    print("Training the model.")
-    deduper.train(recall=params.recall, index_predicates=params.index_predicates)
-
-    # Save the trained model
-    print("Saving the model.")
-    with open(params.save_model_path, 'w') as tf:
-        deduper.write_training(tf)
-    with open(params.save_model_setting_path, 'wb') as sf:
-        deduper.write_settings(sf)
-
-    print("Model predicates:")
-    print(deduper.predicates)
-
-    # Train
-    # Cluster (prediction stage)
-    # Please see why the accuracy dropped which cleaning has changed
-    clustered_dupes = deduper.partition(to_dedupe_dict, 0.37)
-    print('# duplicate sets', len(clustered_dupes))
-
-    features['xy_same_entity'] = pd.Series(np.zeros(len(features)))
-    features.xy_same_entity = 0.0
-
-    # Save the result
-    for el in clustered_dupes:
-        for i in range(len(el[0])):
-            for j in range(i + 1, len(el[0])):
-                k = (el[0][i], el[0][j])
-                r_k = (el[0][j], el[0][i])
-                p = el[1][i] * el[1][j]
-
-                if k in features.index:
-                    features.loc[k, 'xy_same_entity'] = p
-
-                if r_k in features.index:
-                    features.loc[r_k, 'xy_same_entity'] = p
+    #
+    # to_dedupe_dict = x4.to_dict(orient='index')
+    # fields = [
+    #     {'field': 'name', 'type': 'Text', 'has missing': False},
+    #     {'field': 'brand', 'type': 'Exact', 'has missing': False},
+    #     {'field': 'size', 'type': 'Exact', 'has missing': False},
+    #     {'field': 'product_type', 'type': 'Exact', 'has missing': False}]
+    #
+    # # Create deduper model
+    # print("Creating dedupe model.")
+    # deduper = dedupe.Dedupe(fields, num_cores=params.num_cores)
+    #
+    # # Get the label data
+    # y = pd.read_csv(params.label_dataset_path)
+    #
+    # trainig_data = {'match': [], 'distinct': []}
+    # match = y[y.label == 1].to_dict(orient='row')
+    # distinct = y[y.label == 0].to_dict(orient='row')
+    # for m in match:
+    #     trainig_data['match'].append((to_dedupe_dict[m['left_instance_id']], to_dedupe_dict[m['right_instance_id']]))
+    # for d in distinct:
+    #     trainig_data['distinct'].append((to_dedupe_dict[d['left_instance_id']], to_dedupe_dict[d['right_instance_id']]))
+    #
+    # # Save the training data
+    # with open(params.training_file, 'w') as fout:
+    #     json.dump(trainig_data, fout)
+    #
+    # print("Preparing the training data.")
+    # with open(params.training_file) as tf:
+    #     deduper.prepare_training(to_dedupe_dict, training_file=tf,
+    #                              sample_size=params.sample_size,
+    #                              blocked_proportion=params.blocked_proportion)
+    #
+    # # Train the model
+    # print("Training the model.")
+    # deduper.train(recall=params.recall, index_predicates=params.index_predicates)
+    #
+    # # Save the trained model
+    # print("Saving the model.")
+    # with open(params.save_model_path, 'w') as tf:
+    #     deduper.write_training(tf)
+    # with open(params.save_model_setting_path, 'wb') as sf:
+    #     deduper.write_settings(sf)
+    #
+    # print("Model predicates:")
+    # print(deduper.predicates)
+    #
+    # # Train
+    # # Cluster (prediction stage)
+    # # Please see why the accuracy dropped which cleaning has changed
+    # clustered_dupes = deduper.partition(to_dedupe_dict, 0.37)
+    # print('# duplicate sets', len(clustered_dupes))
+    #
+    # features['xy_same_entity'] = pd.Series(np.zeros(len(features)))
+    # features.xy_same_entity = 0.0
+    #
+    # # Save the result
+    # for el in clustered_dupes:
+    #     for i in range(len(el[0])):
+    #         for j in range(i + 1, len(el[0])):
+    #             k = (el[0][i], el[0][j])
+    #             r_k = (el[0][j], el[0][i])
+    #             p = el[1][i] * el[1][j]
+    #
+    #             if k in features.index:
+    #                 features.loc[k, 'xy_same_entity'] = p
+    #
+    #             if r_k in features.index:
+    #                 features.loc[r_k, 'xy_same_entity'] = p
 
     # Create the labels
     gt_lbs = pd.read_csv(params.label_dataset_path)
