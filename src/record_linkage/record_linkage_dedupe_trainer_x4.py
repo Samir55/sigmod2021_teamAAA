@@ -299,9 +299,9 @@ def get_features(x_dev, candidate_links, dedupe_features=None):
     compare_cl.string('name', 'name', method='qgram')
     compare_cl.string('name', 'name', method='damerau_levenshtein')
     compare_cl.string('name', 'name', method='levenshtein')
-    compare_cl.string('name', 'name', method='smith_waterman')  # --> 200 sec
+    # compare_cl.string('name', 'name', method='smith_waterman')  # --> 200 sec
     compare_cl.string('name', 'name', method='jarowinkler')
-    compare_cl.string('name', 'name', method='lcs')  # 400 sec
+    # compare_cl.string('name', 'name', method='lcs')  # 400 sec
     # 7min
 
     features = compare_cl.compute(candidate_links, x_dev)

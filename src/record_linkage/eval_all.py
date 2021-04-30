@@ -98,9 +98,9 @@ def eval_lightgbm_dedupe(dataset_type: str, dataset_rf, dataset_dedupe):
     compare_cl.string('name', 'name', method='qgram')
     compare_cl.string('name', 'name', method='damerau_levenshtein')
     compare_cl.string('name', 'name', method='levenshtein')
-    compare_cl.string('name', 'name', method='smith_waterman')
+    # compare_cl.string('name', 'name', method='smith_waterman')
     compare_cl.string('name', 'name', method='jarowinkler')
-    compare_cl.string('name', 'name', method='lcs')
+    # compare_cl.string('name', 'name', method='lcs')
 
     features = compare_cl.compute(candidate_links, dataset_rf)
 
