@@ -72,6 +72,9 @@ def dedupe_train(params: DictConfig):
     else:
         fields = [
             {'field': 'name', 'type': 'Text', 'has missing': True},
+            {'field': 'name_2', 'type': 'String', 'has missing': True},
+            {'field': 'line', 'type': 'Text', 'has missing': True},
+            {'field': 'model', 'type': 'Text', 'has missing': True},
             {'field': 'brand', 'type': 'Exact', 'has missing': True},
             {'field': 'size', 'type': 'Exact', 'has missing': True},
             {'field': 'product_type', 'type': 'Exact', 'has missing': True}]
@@ -117,91 +120,92 @@ def dedupe_train(params: DictConfig):
     print("Model predicates:")
     print(deduper.predicates)
 
-    # Write our original data back out to a CSV with a new column called
-    # 'Cluster ID' which indicates which records refer to each other.
-    clustered_dupes = deduper.partition(to_dedupe_dict, 0.4)
-
-    print('# duplicate sets', len(clustered_dupes))
-    cluster_membership = {}
-    result_list = []
-    counter = 0
-    for cluster_id, (records, scores) in enumerate(clustered_dupes):
-        print(cluster_id, records, scores)
-        for cb in combinations(records, 2):
-            # print(cb)
-            result_list.append({"left_instance_id": cb[0], "right_instance_id": cb[1]})
-            counter += 1
-        for record_id, score in zip(records, scores):
-            cluster_membership[record_id] = {
-                "Cluster ID": cluster_id,
-                "confidence_score": score
-            }
-
-    from collections import defaultdict
-    current_cluster_id = 0
-    record_to_cluster = {}
-    cluster_records = defaultdict(set)
-
-    gold = pd.read_csv(params.label_dataset_path)
-    gold_dict = {}
-    lii = "left_instance_id"
-    rii = "right_instance_id"
-    lbl = "label"
-
-    for index, row in tqdm(gold.iterrows()):
-        l, r, label = row[lii], row[rii], row[lbl]
-        if label == 0:
-            continue
-
-        s = l + "|" + r
-        gold_dict[s] = 1
-
-    for r in gold_dict:
-        a, b = (r.split('|'))
-
-        # Check the case
-        if (a not in record_to_cluster and b not in record_to_cluster):
-            # Create a new cluster
-            record_to_cluster[a] = current_cluster_id
-            record_to_cluster[b] = current_cluster_id
-            cluster_records[current_cluster_id].update({a, b})
-            current_cluster_id += 1
-        elif (a in record_to_cluster and b not in record_to_cluster):
-            c = record_to_cluster[a]
-            record_to_cluster[b] = c
-            cluster_records[c].update({b})
-            pass
-        elif (b in record_to_cluster and a not in record_to_cluster):
-            c = record_to_cluster[b]
-            record_to_cluster[a] = c
-            cluster_records[c].update({a})
-        elif (a in record_to_cluster and b in record_to_cluster and record_to_cluster[a] != record_to_cluster[b]):
-            # merge two clusters
-            # Get the cluster id of to be kept cluster
-            c_keep = record_to_cluster[a]
-            c_rem = record_to_cluster[b]
-            record_to_cluster[b] = c_keep
-            cluster_records[c_keep].update(cluster_records[c_rem])
-            del cluster_records[c_rem]
-
-    print("total:", counter)
-    with open('debug.csv', 'w') as f_output, open(params.train_dataset_path) as f_input:
-
-        reader = csv.DictReader(f_input)
-        # get first element
-        fieldnames = ['Cluster ID', 'confidence_score', 'Real Cluster ID'] + list(
-            to_dedupe_dict[list(to_dedupe_dict.keys())[0]].keys())
-        # print(fieldnames)
-
-        writer = csv.DictWriter(f_output, fieldnames=fieldnames)
-        writer.writeheader()
-
-        for k, v in to_dedupe_dict.items():
-            v.update(cluster_membership[k])
-            # Real cluster id
-            if v[k] not in record_to_cluster:
-                record_to_cluster[v[k]] = current_cluster_id
-                current_cluster_id += 1
-            v.update(record_to_cluster[v[k]])
-            # print(v.keys())
-            writer.writerow(v)
+    #
+    # # Write our original data back out to a CSV with a new column called
+    # # 'Cluster ID' which indicates which records refer to each other.
+    # clustered_dupes = deduper.partition(to_dedupe_dict, 0.4)
+    #
+    # print('# duplicate sets', len(clustered_dupes))
+    # cluster_membership = {}
+    # result_list = []
+    # counter = 0
+    # for cluster_id, (records, scores) in enumerate(clustered_dupes):
+    #     print(cluster_id, records, scores)
+    #     for cb in combinations(records, 2):
+    #         # print(cb)
+    #         result_list.append({"left_instance_id": cb[0], "right_instance_id": cb[1]})
+    #         counter += 1
+    #     for record_id, score in zip(records, scores):
+    #         cluster_membership[record_id] = {
+    #             "Cluster ID": cluster_id,
+    #             "confidence_score": score
+    #         }
+    #
+    # from collections import defaultdict
+    # current_cluster_id = 0
+    # record_to_cluster = {}
+    # cluster_records = defaultdict(set)
+    #
+    # gold = pd.read_csv(params.label_dataset_path)
+    # gold_dict = {}
+    # lii = "left_instance_id"
+    # rii = "right_instance_id"
+    # lbl = "label"
+    #
+    # for index, row in tqdm(gold.iterrows()):
+    #     l, r, label = row[lii], row[rii], row[lbl]
+    #     if label == 0:
+    #         continue
+    #
+    #     s = l + "|" + r
+    #     gold_dict[s] = 1
+    #
+    # for r in gold_dict:
+    #     a, b = (r.split('|'))
+    #
+    #     # Check the case
+    #     if (a not in record_to_cluster and b not in record_to_cluster):
+    #         # Create a new cluster
+    #         record_to_cluster[a] = current_cluster_id
+    #         record_to_cluster[b] = current_cluster_id
+    #         cluster_records[current_cluster_id].update({a, b})
+    #         current_cluster_id += 1
+    #     elif (a in record_to_cluster and b not in record_to_cluster):
+    #         c = record_to_cluster[a]
+    #         record_to_cluster[b] = c
+    #         cluster_records[c].update({b})
+    #         pass
+    #     elif (b in record_to_cluster and a not in record_to_cluster):
+    #         c = record_to_cluster[b]
+    #         record_to_cluster[a] = c
+    #         cluster_records[c].update({a})
+    #     elif (a in record_to_cluster and b in record_to_cluster and record_to_cluster[a] != record_to_cluster[b]):
+    #         # merge two clusters
+    #         # Get the cluster id of to be kept cluster
+    #         c_keep = record_to_cluster[a]
+    #         c_rem = record_to_cluster[b]
+    #         record_to_cluster[b] = c_keep
+    #         cluster_records[c_keep].update(cluster_records[c_rem])
+    #         del cluster_records[c_rem]
+    #
+    # print("total:", counter)
+    # with open('debug.csv', 'w') as f_output, open(params.train_dataset_path) as f_input:
+    #
+    #     reader = csv.DictReader(f_input)
+    #     # get first element
+    #     fieldnames = ['Cluster ID', 'confidence_score', 'Real Cluster ID'] + list(
+    #         to_dedupe_dict[list(to_dedupe_dict.keys())[0]].keys())
+    #     # print(fieldnames)
+    #
+    #     writer = csv.DictWriter(f_output, fieldnames=fieldnames)
+    #     writer.writeheader()
+    #
+    #     for k, v in to_dedupe_dict.items():
+    #         v.update(cluster_membership[k])
+    #         # Real cluster id
+    #         if k not in list(record_to_cluster.keys()):
+    #             record_to_cluster[k] = current_cluster_id
+    #             current_cluster_id += 1
+    #         v.update({'Real Cluster ID': record_to_cluster[k]})
+    #         # print(v.keys())
+    #         writer.writerow(v)
