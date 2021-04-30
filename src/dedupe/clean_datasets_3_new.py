@@ -83,7 +83,7 @@ def clean_laptops_dataset(x_org):
     df.replace({r'[^\x00-\x7F]+': ''}, regex=True, inplace=True)
 
     for column in df.columns:
-        if column == 'instance_id':
+        if column in ['instance_id', 'new_title_tokens', 'has_ssd']:
             continue
         df[column] = df[column].str.lower().str.replace(irrelevant_regex, ' ').str.replace(multispace_regex, ' ')
 
