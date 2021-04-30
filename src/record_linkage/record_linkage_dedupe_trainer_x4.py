@@ -16,9 +16,6 @@ from unidecode import unidecode
 import recordlinkage as rl
 
 
-#######################################
-########   CLEANING      ##############
-#######################################
 def formatNumber(num):
     num = float(num)
     if num % 1 == 0:
@@ -284,25 +281,19 @@ def clean_products_dataset_dedupe(x_org):
     return x4_dev
 
 
-#######################################
-########   FEATURES      ##############
-#######################################
-
 def get_features(x_dev, candidate_links, dedupe_features=None):
     # Create the comparator functions
     compare_cl = rl.Compare(n_jobs=-1)
-
     compare_cl.exact('brand', 'brand')
     compare_cl.exact('product_type', 'product_type')
     compare_cl.exact('size', 'size')
-    # compare_cl.string('price', 'price')
     compare_cl.string('name', 'name', method='qgram')
     compare_cl.string('name', 'name', method='damerau_levenshtein')
     compare_cl.string('name', 'name', method='levenshtein')
-    # compare_cl.string('name', 'name', method='smith_waterman')  # --> 200 sec
     compare_cl.string('name', 'name', method='jarowinkler')
-    # compare_cl.string('name', 'name', method='lcs')  # 400 sec
-    # 7min
+    # compare_cl.string('name', 'name', method='smith_waterman')
+    # compare_cl.string('name', 'name', method='lcs')
+    # compare_cl.string('price', 'price')
 
     features = compare_cl.compute(candidate_links, x_dev)
 
