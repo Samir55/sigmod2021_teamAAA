@@ -75,7 +75,7 @@ def dedupe_train(params: DictConfig):
     else:
         fields = [
             {'field': 'name', 'type': 'Text', 'has missing': True},
-            {'field': 'name_2', 'type': 'String', 'has missing': True},
+            # {'field': 'name_2', 'type': 'String', 'has missing': True},
             {'field': 'line', 'type': 'Text', 'has missing': True},
             {'field': 'model', 'type': 'Text', 'has missing': True},
             {'field': 'brand', 'type': 'Exact', 'has missing': True},
@@ -150,7 +150,7 @@ def dedupe_train(params: DictConfig):
     print("Model predicates:")
     print(deduper.predicates)
 
-    print(deduper.uncertain_pairs())
+    # print(deduper.uncertain_pairs())
 
     #
     # # Write our original data back out to a CSV with a new column called

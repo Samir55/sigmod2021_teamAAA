@@ -18,7 +18,7 @@ partition_threshold = {
 
 def deduper_eval(dataset_type: str, dataset):
     # Create deduper model
-    with open('../../trained_models/deduper/sub_5/trained_{}_settings.json'.format(dataset_type), 'rb') as fin:
+    with open('../../trained_models/deduper/sub_9/trained_{}_settings.json'.format(dataset_type), 'rb') as fin:
         deduper = dedupe.StaticDedupe(fin, num_cores=8)
 
     # Prepare the data
@@ -38,7 +38,7 @@ def deduper_eval(dataset_type: str, dataset):
             'screen_size',
             'model']
     else:
-        cols = ['name', 'brand', 'size', 'product_type']
+        cols = ['name', 'name_2', 'model', 'line', 'brand', 'size', 'product_type']
     to_dedupe = dataset[cols]
     to_dedupe_dict = to_dedupe.to_dict(orient='index')
 
