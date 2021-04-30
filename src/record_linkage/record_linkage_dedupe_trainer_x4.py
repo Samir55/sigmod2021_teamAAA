@@ -16,7 +16,7 @@ from unidecode import unidecode
 import recordlinkage as rl
 from omegaconf import OmegaConf
 
-from src.record_linkage.clean_datasets_x4 import clean_products_dataset_rf, clean_products_dataset_dedupe
+from .clean_datasets_x4 import clean_products_dataset_rf, clean_products_dataset_dedupe
 
 
 def get_features(x_dev, candidate_links, dedupe_features=None):
